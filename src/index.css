@@ -1,0 +1,18 @@
+@import "tailwindcss";
+
+@theme {
+  /* Variabel warna untuk fitur Geo-Cultural Tagging */
+  --color-aceh-primary: #1B4332;
+  --color-aceh-secondary: #D4AF37;
+  --color-aceh-background: #F0F4F2;
+
+  --color-minang-primary: #7B0000;
+  --color-minang-secondary: #FFD700;
+  --color-minang-background: #FDF5E6;
+}
+
+@layer base {
+  body {
+    @apply transition-colors duration-700 antialiased font-sans;
+  }
+}

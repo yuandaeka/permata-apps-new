@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZenBreath - AI Breathing Coach</title>
+    <!-- MediaPipe Pose and Drawing Utils -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+
+    <style>
+        :root {
+            --bg-color: #f0f4f8;
+            --primary-blue: #3b82f6;
+            --primary-green: #10b981;
+            --text-dark: #1e293b;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --circle-inhale: rgba(59, 130, 246, 0.6);
+            --circle-hold: rgba(148, 163, 184, 0.4);
+            --circle-exhale: rgba(16, 185, 129, 0.5);
+            --warning-red: #ef4444;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, system-ui, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-dark);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* Layout Container */
+        #game-layout {
+            display: none; /* Hidden until start */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            flex-grow: 1;
+            padding: 20px;
+            gap: 20px;
+            width: 100%;
+        }
+
+        @media (min-width: 1024px) {
+            #game-layout {
+                flex-direction: row;
+                justify-content: space-evenly;
+            }
+        }
+
+        /* Video / Vision Card */
+        #vision-card {
+            position: relative;
+            width: 100%;
+            max-width: 440px;
+            aspect-ratio: 4/3;
+            background: #111;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            border: 4px solid white;
+        }
+
+        video#input_video {
+            display: block;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1);
+        }
+
+        canvas#output_canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            transform: scaleX(-1);
+            pointer-events: none;
+        }
+
+        /* AI Status Message Overlay */
+        #vision-alert {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            z-index: 5;
+            backdrop-filter: blur(4px);
+        }
+
+        #vision-alert.active { display: flex; }
+
+        /* UI Overlay */
+        #ui-overlay {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+        }
+
+        #score-pill {
+            background: var(--card-bg);
+            padding: 10px 30px;
+            border-radius: 50px;
+            font-weight: 800;
+            font-size: 1.4rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            color: var(--primary-blue);
+        }
+
+        #instruction {
+            font-size: clamp(1.8rem, 6vw, 2.5rem);
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin: 5px 0;
+            text-align: center;
+        }
+
+        #circle-container {
+            width: clamp(180px, 45vw, 300px);
+            height: clamp(180px, 45vw, 300px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        #breathing-circle {
+            width: 60px;
+            height: 60px;
+            background: var(--circle-inhale);
+            border-radius: 50%;
+            transition: transform 0.1s linear, background-color 0.8s ease;
+            box-shadow: 0 0 30px rgba(59, 130, 246, 0.2);
+        }
+
+        #timer {
+            position: absolute;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        #feedback-msg {
+            background: #fee2e2;
+            color: var(--warning-red);
+            padding: 12px 24px;
+            border-radius: 16px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(10px);
+            transition: all 0.3s ease;
+            text-align: center;
+            max-width: 80%;
+        }
+
+        #feedback-msg.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Buttons */
+        #finish-btn {
+            background: #f1f5f9;
+            color: #64748b;
+            border: 2px solid #e2e8f0;
+            padding: 12px 32px;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 12px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.2s;
+        }
+
+        #finish-btn:hover {
+            background: #e2e8f0;
+            color: #1e293b;
+        }
+
+        /* Overlays (Start/Finish) */
+        .full-overlay {
+            position: fixed;
+            inset: 0;
+            background: white;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+            text-align: center;
+        }
+
+        #finish-overlay { display: none; }
+
+        .hero-title { font-size: 2.8rem; color: var(--primary-blue); margin-bottom: 15px; }
+        .hero-desc { max-width: 500px; color: #64748b; margin-bottom: 30px; line-height: 1.6; }
+
+        .btn-primary {
+            background: var(--primary-blue);
+            color: white;
+            border: none;
+            padding: 18px 50px;
+            font-size: 1.3rem;
+            font-weight: 600;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.4);
+        }
+
+        .btn-primary:active { transform: scale(0.95); }
+        .btn-primary:disabled {
+            background: #cbd5e1;
+            box-shadow: none;
+            cursor: not-allowed;
+        }
+
+        #loading-ai {
+            margin-top: 20px;
+            font-size: 0.9rem;
+            color: #94a3b8;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Start Screen -->
+    <div id="start-overlay" class="full-overlay">
+        <h1 class="hero-title">ZenBreath AI</h1>
+        <p class="hero-desc">Guided breathing verified by pose detection. Position your face and shoulders in view to begin.</p>
+        <button id="start-btn" class="btn-primary" disabled>Loading Libraries...</button>
+        <div id="loading-ai">Initializing AI environment...</div>
+    </div>
+
+    <!-- Final Result Screen -->
+    <div id="finish-overlay" class="full-overlay">
+        <h1 class="hero-title" style="color: var(--primary-green)">Session Complete</h1>
+        <p class="hero-desc">Great job taking a moment for yourself.</p>
+        <div id="final-score-display" style="font-size: 4rem; font-weight: 900; color: var(--primary-blue); margin-bottom: 30px;">0</div>
+        <button onclick="location.reload()" class="btn-primary">Try Again</button>
+    </div>
+
+    <!-- Main Game Interface -->
+    <div id="game-layout">
+        <div id="vision-card">
+            <video id="input_video" autoplay playsinline muted></video>
+            <canvas id="output_canvas"></canvas>
+            
+            <div id="vision-alert">
+                <div style="font-size: 2rem; margin-bottom: 10px;">👤</div>
+                <p id="vision-alert-text">Please position yourself in front of the camera.</p>
+            </div>
+        </div>
+
+        <div id="ui-overlay">
+            <div id="score-pill">Score: <span id="score-val">0</span></div>
+            
+            <div id="instruction">Inhale</div>
+
+            <div id="circle-container">
+                <div id="breathing-circle"></div>
+                <div id="timer">3.0</div>
+            </div>
+
+            <div id="feedback-msg">Please follow the breathing rhythm.</div>
+
+            <button id="finish-btn">Finish Session</button>
+        </div>
+    </div>
+
+    <script>
+        // --- Logic Constants ---
+        const PHASE_MS = 3000;
+        const STABILIZATION_MS = 2000;
+        const SMOOTHING_WINDOW = 8;
+        const WRONG_THRESHOLD = 25; // Frames of discrepancy before warning
+
+        // --- State Variables ---
+        let currentPhaseIdx = 0;
+        const phases = ['INHALE', 'HOLD', 'EXHALE'];
+        let score = 0;
+        let phaseTime = 0;
+        let lastTime = 0;
+        let isActive = false;
+        
+        let shoulderHistory = [];
+        let isPersonInView = false;
+        let detectionStartTime = 0;
+        let isStabilized = false;
+        let incorrectFrameCount = 0;
+        let lastSyncState = true;
+        
+        // --- Elements ---
+        const video = document.getElementById('input_video');
+        const canvas = document.getElementById('output_canvas');
+        const ctx = canvas.getContext('2d');
+        const scoreVal = document.getElementById('score-val');
+        const timerTxt = document.getElementById('timer');
+        const circle = document.getElementById('breathing-circle');
+        const instructionTxt = document.getElementById('instruction');
+        const feedbackMsg = document.getElementById('feedback-msg');
+        const visionAlert = document.getElementById('vision-alert');
+        const visionAlertText = document.getElementById('vision-alert-text');
+        const startBtn = document.getElementById('start-btn');
+        const startOverlay = document.getElementById('start-overlay');
+        const loadingAi = document.getElementById('loading-ai');
+        
+        let mediaCamera = null;
+        let pose = null;
+
+        // --- Library Check ---
+        const checkLibraries = setInterval(() => {
+            if (typeof Pose !== 'undefined' && typeof Camera !== 'undefined') {
+                startBtn.disabled = false;
+                startBtn.innerText = "Start Session";
+                loadingAi.innerText = "Ready to start.";
+                clearInterval(checkLibraries);
+            }
+        }, 500);
+
+        // --- Detection Logic ---
+        function onPoseResults(results) {
+            if (!isActive) return;
+            
+            ctx.save();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const landmarks = results.poseLandmarks;
+            
+            if (!landmarks || !landmarks[0] || !landmarks[11] || !landmarks[12]) {
+                handlePresence(false);
+                ctx.restore();
+                return;
+            }
+
+            handlePresence(true);
+
+            if (typeof drawConnectors !== 'undefined') {
+                drawConnectors(ctx, landmarks, POSE_CONNECTIONS, {color: '#FFFFFF33', lineWidth: 2});
+                drawLandmarks(ctx, [landmarks[0], landmarks[11], landmarks[12]], {color: '#3b82f6', radius: 4});
+            }
+
+            if (!isStabilized) {
+                const elapsed = Date.now() - detectionStartTime;
+                if (elapsed < STABILIZATION_MS) {
+                    visionAlertText.innerText = `Calibrating... ${Math.ceil((STABILIZATION_MS - elapsed)/1000)}s`;
+                    ctx.restore();
+                    return;
+                } else {
+                    isStabilized = true;
+                    visionAlert.classList.remove('active');
+                }
+            }
+
+            const avgY = (landmarks[11].y + landmarks[12].y) / 2;
+            shoulderHistory.push(avgY);
+            if (shoulderHistory.length > SMOOTHING_WINDOW) shoulderHistory.shift();
+
+            const currentSmoothedY = shoulderHistory.reduce((a,b) => a + b, 0) / shoulderHistory.length;
+            const trend = shoulderHistory[0] - currentSmoothedY;
+
+            analyzeBreathingTrend(trend);
+            ctx.restore();
+        }
+
+        function handlePresence(found) {
+            if (found && !isPersonInView) {
+                detectionStartTime = Date.now();
+                visionAlert.classList.add('active');
+                visionAlertText.innerText = "Stabilizing position...";
+            } else if (!found) {
+                isPersonInView = false;
+                isStabilized = false;
+                visionAlert.classList.add('active');
+                visionAlertText.innerText = "Please position yourself in front of the camera.";
+            }
+            isPersonInView = found;
+        }
+
+        function analyzeBreathingTrend(trend) {
+            const phase = phases[currentPhaseIdx];
+            let isCorrect = true;
+
+            const upThreshold = 0.0004;
+            const downThreshold = -0.0004;
+
+            if (phase === 'INHALE') {
+                if (trend < upThreshold) isCorrect = false;
+            } else if (phase === 'EXHALE') {
+                if (trend > downThreshold) isCorrect = false;
+            } else if (phase === 'HOLD') {
+                if (Math.abs(trend) > upThreshold * 2) isCorrect = false;
+            }
+
+            if (!isCorrect) {
+                incorrectFrameCount++;
+            } else {
+                incorrectFrameCount = Math.max(0, incorrectFrameCount - 1);
+            }
+
+            if (incorrectFrameCount > WRONG_THRESHOLD) {
+                feedbackMsg.classList.add('show');
+                lastSyncState = false;
+            } else {
+                feedbackMsg.classList.remove('show');
+                lastSyncState = true;
+            }
+        }
+
+        function loop(timestamp) {
+            if (!isActive) return;
+
+            if (!lastTime) lastTime = timestamp;
+            const delta = timestamp - lastTime;
+            lastTime = timestamp;
+
+            if (isStabilized) {
+                phaseTime += delta;
+
+                if (phaseTime >= PHASE_MS) {
+                    phaseTime = 0;
+                    if (currentPhaseIdx === 2) {
+                        if (lastSyncState) score++;
+                        scoreVal.innerText = score;
+                    }
+                    currentPhaseIdx = (currentPhaseIdx + 1) % phases.length;
+                }
+                updateAnimation();
+            }
+
+            requestAnimationFrame(loop);
+        }
+
+        function updateAnimation() {
+            const phase = phases[currentPhaseIdx];
+            const progress = phaseTime / PHASE_MS;
+            let scale = 1;
+
+            if (phase === 'INHALE') {
+                scale = 1 + (progress * 2.5);
+                circle.style.backgroundColor = 'var(--circle-inhale)';
+                instructionTxt.innerText = "Inhale";
+            } else if (phase === 'HOLD') {
+                scale = 3.5;
+                circle.style.backgroundColor = 'var(--circle-hold)';
+                instructionTxt.innerText = "Hold";
+            } else {
+                scale = 3.5 - (progress * 2.5);
+                circle.style.backgroundColor = 'var(--circle-exhale)';
+                instructionTxt.innerText = "Exhale";
+            }
+
+            circle.style.transform = `scale(${scale})`;
+            timerTxt.innerText = ((PHASE_MS - phaseTime) / 1000).toFixed(1);
+        }
+
+        startBtn.addEventListener('click', async () => {
+            if (startBtn.disabled) return;
+            
+            startBtn.disabled = true;
+            loadingAi.style.display = 'block';
+            loadingAi.innerText = "Connecting to camera...";
+
+            try {
+                if (typeof Pose === 'undefined') {
+                    throw new Error("AI libraries are still loading. Please wait a few seconds.");
+                }
+
+                pose = new Pose({
+                    locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`
+                });
+
+                pose.setOptions({
+                    modelComplexity: 1,
+                    smoothLandmarks: true,
+                    minDetectionConfidence: 0.6,
+                    minTrackingConfidence: 0.6
+                });
+
+                pose.onResults(onPoseResults);
+
+                const stream = await navigator.mediaDevices.getUserMedia({
+                    video: { width: 640, height: 480, facingMode: "user" }
+                });
+                video.srcObject = stream;
+                await video.play();
+                
+                if (typeof Camera === 'undefined') {
+                    throw new Error("Camera utility is still loading.");
+                }
+
+                mediaCamera = new Camera(video, {
+                    onFrame: async () => {
+                        if (pose) await pose.send({image: video});
+                    },
+                    width: 640,
+                    height: 480
+                });
+
+                await mediaCamera.start();
+                
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                startOverlay.style.display = 'none';
+                document.getElementById('game-layout').style.display = 'flex';
+                isActive = true;
+                requestAnimationFrame(loop);
+            } catch (err) {
+                console.error(err);
+                alert("Error starting session: " + err.message);
+                startBtn.disabled = false;
+                loadingAi.innerText = "Initialization failed. Check permissions.";
+            }
+        });
+
+        document.getElementById('finish-btn').addEventListener('click', () => {
+            isActive = false;
+            if (mediaCamera) mediaCamera.stop();
+            if (video.srcObject) {
+                const tracks = video.srcObject.getTracks();
+                tracks.forEach(track => track.stop());
+            }
+            
+            document.getElementById('game-layout').style.display = 'none';
+            document.getElementById('final-score-display').innerText = score;
+            document.getElementById('finish-overlay').style.display = 'flex';
+        });
+
+        window.addEventListener('resize', () => {
+            if (video.videoWidth) {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+            }
+        });
+    </script>
+</body>
+</html>
