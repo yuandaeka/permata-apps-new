@@ -32,11 +32,13 @@ const LandingPage = () => {
             humanis berbasis kearifan lokal untuk pertumbuhan mental
             pasca-trauma.
           </p>
-          <button
-            className={`px-12 py-6 rounded-3xl text-white font-black uppercase tracking-[0.2em] text-xs shadow-2xl hover:scale-105 transition-all ${theme.btn}`}
+          <Link
+            href="/dashboard"
+            prefetch={false}
+            className={`inline-block px-12 py-6 rounded-3xl text-white font-black uppercase tracking-[0.2em] text-xs shadow-2xl hover:scale-105 transition-all cursor-pointer ${theme.btn}`}
           >
             Mulai Pemulihan
-          </button>
+          </Link>
         </motion.div>
 
         <div className="bg-gray-400 aspect-[4/5] rounded-[5rem] overflow-hidden shadow-2xl border-[16px] border-white relative">
@@ -58,11 +60,13 @@ const LandingPage = () => {
           title="Geo-Cultural Tagging"
           desc="Penyesuaian interface berdasarkan kearifan lokal Aceh dan Sumatera (Meunasah/Rumah Gadang)."
         />
-        <CardAI
-          icon={<BrainCircuit size={40} />}
-          title="AI Jurnal Hikmah"
-          desc="Transformasi trauma menjadi makna melalui narasi reflektif berbasis AI sesuai siklus Trauma-Informed Care."
-        />
+        <Link href="/jurnal" prefetch={false} className="block group">
+          <CardAI
+            icon={<BrainCircuit size={40} />}
+            title="AI Jurnal Hikmah"
+            desc="Transformasi trauma menjadi makna melalui narasi reflektif berbasis AI sesuai siklus Trauma-Informed Care."
+          />
+        </Link>
         <FeatureCard
           icon={<Users size={40} />}
           title="Saweu Syedara"
@@ -87,17 +91,17 @@ const LandingPage = () => {
             </h5>
             <ul className="space-y-4 font-bold uppercase text-[10px] tracking-widest">
               <li>
-                <Link href="/" className="hover:opacity-50 transition">
+                <Link href="/" prefetch={false} className="hover:opacity-50 transition">
                   Home
                 </Link>
               </li>
               <li>
-                <Link href="/dashboard" className="hover:opacity-50 transition">
+                <Link href="/dashboard" prefetch={false} className="hover:opacity-50 transition">
                   Dashboard
                 </Link>
               </li>
               <li>
-                <Link href="/jurnal" className="hover:opacity-50 transition">
+                <Link href="/jurnal" prefetch={false} className="hover:opacity-50 transition">
                   Jurnal Hikmah
                 </Link>
               </li>

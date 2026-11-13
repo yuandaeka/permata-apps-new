@@ -24,6 +24,9 @@
     "paths": {
       "@/*": [
         "./src/*"
+      ],
+      "@permata/ui": [
+        "../../packages/ui/src/index.ts"
       ]
     },
     "target": "ES2017"

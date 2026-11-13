@@ -1,0 +1,1875 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum ConsentStatus {
+  PENDING
+  GRANTED
+  REVOKED
+  WITHDRAWN
+  EXPIRED
+}
+
+enum MemberStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
+enum OrganizationMemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+enum OrganizationType {
+  GOVERNMENT
+  NGO
+  SCHOOL
+  HEALTH_FACILITY
+  COMMUNITY
+  OTHER
+}
+
+enum ContentStatus {
+  DRAFT
+  REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+enum ContentType {
+  ARTICLE
+  VIDEO
+  AUDIO
+  INFOGRAPHIC
+  GUIDE
+  QUIZ
+  STORY
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+  AUDIO
+  DOCUMENT
+  OTHER
+}
+
+enum DisasterPhase {
+  PREVENTION
+  PREPAREDNESS
+  RESPONSE
+  RECOVERY
+}
+
+enum IncidentStatus {
+  ACTIVE
+  MONITORING
+  RESOLVED
+  CLOSED
+}
+
+enum IncidentSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum ChildSafetyStatusValue {
+  SAFE
+  MISSING
+  INJURED
+  DECEASED
+  UNKNOWN
+}
+
+enum ReunificationStatus {
+  PENDING
+  IN_PROGRESS
+  REUNIFIED
+  FAILED
+  CLOSED
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum SupportRequestStatus {
+  OPEN
+  ASSIGNED
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum SupportType {
+  PSYCHOSOCIAL
+  MEDICAL
+  MATERIAL
+  LEGAL
+  INFORMATION
+  OTHER
+}
+
+enum SyncStatus {
+  PENDING
+  SYNCED
+  FAILED
+  CONFLICT
+}
+
+enum JournalPrivacy {
+  PRIVATE
+  CARE_CIRCLE
+  PUBLIC
+}
+
+enum CareCircleRole {
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  DECLINED
+  EXPIRED
+}
+
+enum ReferralStatus {
+  OPEN
+  IN_PROGRESS
+  CLOSED
+  CANCELLED
+}
+
+enum AIMessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+}
+
+enum TrainingStatus {
+  NOT_STARTED
+  IN_PROGRESS
+  COMPLETED
+  FAILED
+}
+
+enum AuditAction {
+  CREATE
+  READ
+  UPDATE
+  DELETE
+  LOGIN
+  LOGOUT
+  EXPORT
+  IMPORT
+  ASSIGN
+  REVOKE
+}
+
+enum AssessmentType {
+  RESILIENCE
+  VULNERABILITY
+  PSYCHOSOCIAL
+  KNOWLEDGE
+  SKILL
+}
+
+enum SimulationDifficulty {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+enum PassportStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED
+}
+
+enum GrowthAspectType {
+  PHYSICAL
+  COGNITIVE
+  EMOTIONAL
+  SOCIAL
+  SPIRITUAL
+  PERSONAL_STRENGTH
+  APPRECIATION_OF_LIFE
+  RELATING_TO_OTHERS
+  NEW_POSSIBILITIES
+  SPIRITUAL_CHANGE
+}
+
+// ============================================================
+// IDENTITY AND ACCESS
+// ============================================================
+
+model User {
+  id                    String                 @id @default(uuid())
+  phoneNumber           String?                @unique
+  email                 String?                @unique
+  passwordHash          String?
+  status                String?                @default("ACTIVE")
+  isVerified            Boolean                @default(false)
+  isActive              Boolean                @default(true)
+  lastLoginAt           DateTime?
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  deletedAt             DateTime?
+
+  profile               UserProfile?
+  roles                 UserRole[]
+  organizationMembers   OrganizationMember[]
+  childProfiles         ChildProfile[]         @relation("GuardianChildren")
+  createdChildren       ChildProfile[]         @relation("CreatedChildren")
+  guardianRelationships GuardianRelationship[] @relation("GuardianUser")
+  guardianUserRels      GuardianRelationship[] @relation("GuardianUserRel")
+  consentRecords        ConsentRecord[]
+  refreshTokens         RefreshToken[]
+  careAssignments       CareAssignment[]
+  aiConversations       AIConversation[]
+  auditLogs             AuditLog[]
+  simulationAttempts    SimulationAttempt[]
+  assessmentSubmissions AssessmentSubmission[]
+  supervisionSessions   SupervisionSession[]   @relation("SupervisorSessions")
+  supervisedSessions    SupervisionSession[]   @relation("SupervisedSessions")
+
+  @@index([email])
+  @@index([phoneNumber])
+  @@index([status])
+  @@index([deletedAt])
+}
+
+model UserProfile {
+  id                String    @id @default(uuid())
+  userId            String    @unique
+  fullName          String
+  nickname          String?
+  preferredLanguage String?   @default("id")
+  languageCode      String    @default("id")
+  dateOfBirth       DateTime?
+  gender            String?
+  avatarUrl         String?
+  bio               String?
+  provinceCode      String?
+  districtCode      String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  region            Region?   @relation(fields: [provinceCode], references: [code])
+
+  @@index([userId])
+  @@index([provinceCode])
+}
+
+model Role {
+  id          String     @id @default(uuid())
+  code        String     @unique
+  name        String
+  description String?
+  createdAt   DateTime   @default(now())
+
+  userRoles   UserRole[]
+}
+
+model UserRole {
+  id        String   @id @default(uuid())
+  userId    String
+  roleId    String
+  grantedAt DateTime @default(now())
+  grantedBy String?
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role      Role     @relation(fields: [roleId], references: [id])
+
+  @@unique([userId, roleId])
+  @@index([userId])
+  @@index([roleId])
+}
+
+model Organization {
+  id                String               @id @default(uuid())
+  code              String?              @unique
+  name              String
+  type              OrganizationType
+  description       String?
+  logoUrl           String?
+  website           String?
+  phone             String?
+  address           String?
+  regionCode        String?
+  regionId          String?
+  status            String?              @default("ACTIVE")
+  isActive          Boolean              @default(true)
+  createdByUserId   String?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @updatedAt
+
+  members           OrganizationMember[]
+  consentRecords    ConsentRecord[]
+  careAssignments   CareAssignment[]
+  disasterIncidents DisasterIncident[]
+  managedIncidents  DisasterIncident[]   @relation("ManagingOrg")
+  region            Region?              @relation(fields: [regionCode], references: [code])
+
+  @@index([regionCode])
+  @@index([type])
+}
+
+model OrganizationMember {
+  id             String                 @id @default(uuid())
+  organizationId String
+  userId         String
+  role           OrganizationMemberRole @default(MEMBER)
+  status         MemberStatus           @default(ACTIVE)
+  joinedAt       DateTime               @default(now())
+  updatedAt      DateTime               @updatedAt
+
+  organization   Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user           User                   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([organizationId])
+  @@index([userId])
+}
+
+model ChildProfile {
+  id                    String                 @id @default(uuid())
+  registeredById        String?
+  createdByUserId       String?
+  fullName              String?
+  displayName           String?
+  nickname              String?
+  dateOfBirth           DateTime?
+  birthDate             DateTime?
+  gender                String?
+  ageGroup              String?
+  photoUrl              String?
+  schoolName            String?
+  gradeLevel            String?
+  specialNeeds          String?
+  medicalNotes          String?
+  regionId              String?
+  preferredLanguage     String?                @default("id")
+  isActive              Boolean                @default(true)
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
+  deletedAt             DateTime?
+
+  registeredBy          User?                  @relation("GuardianChildren", fields: [registeredById], references: [id])
+  createdByUser         User?                  @relation("CreatedChildren", fields: [createdByUserId], references: [id])
+  region                Region?                @relation(fields: [regionId], references: [id])
+  guardians             GuardianRelationship[]
+  consentRecords        ConsentRecord[]
+  careAssignments       CareAssignment[]
+  safetyPassport        SafetyPassport?
+  locationRecords       ChildLocationRecord[]
+  safetyStatuses        ChildSafetyStatus[]
+  incidentRecords       IncidentChildRecord[]
+  journalEntries        RecoveryJournalEntry[]
+  emotionCheckIns       EmotionCheckIn[]
+  growthReflections     GrowthReflection[]
+  assessmentSubmissions AssessmentSubmission[]
+  simulationAttempts    SimulationAttempt[]
+  careCircleMemberships CareCircleMember[]     @relation("ChildCareCircles")
+  griefActivities       GriefActivity[]
+  littleSteps           LittleStep[]
+  memoryBoxEntries      MemoryBoxEntry[]
+  trainingProgress      TrainingProgress[]
+  reunificationRequests ReunificationRequest[]
+
+  @@index([registeredById])
+  @@index([createdByUserId])
+  @@index([regionId])
+  @@index([deletedAt])
+}
+
+model GuardianRelationship {
+  id               String       @id @default(uuid())
+  childId          String
+  userId           String?
+  guardianUserId   String?
+  relationshipType String
+  isPrimary        Boolean      @default(false)
+  isVerified       Boolean      @default(false)
+  status           String?      @default("PENDING")
+  verifiedAt       DateTime?
+  createdAt        DateTime     @default(now())
+
+  child            ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  user             User?        @relation("GuardianUser", fields: [userId], references: [id], onDelete: Cascade)
+  guardianUser     User?        @relation("GuardianUserRel", fields: [guardianUserId], references: [id], onDelete: Cascade)
+
+  @@index([childId])
+  @@index([userId])
+  @@index([guardianUserId])
+}
+
+model ConsentRecord {
+  id             String        @id @default(uuid())
+  childId        String
+  userId         String?
+  guardianUserId String?
+  organizationId String?
+  consentType    String
+  policyVersion  String?
+  status         String        @default("PENDING")
+  grantedAt      DateTime?
+  expiresAt      DateTime?
+  revokedAt      DateTime?
+  documentUrl    String?
+  notes          String?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  child          ChildProfile  @relation(fields: [childId], references: [id], onDelete: Cascade)
+  user           User?         @relation(fields: [userId], references: [id])
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  @@index([childId])
+  @@index([userId])
+  @@index([status])
+}
+
+model CareAssignment {
+  id             String        @id @default(uuid())
+  childId        String
+  caregiverId    String?
+  userId         String?
+  organizationId String?
+  assignedBy     String?
+  scope          String?
+  status         String        @default("ACTIVE")
+  startDate      DateTime?     @default(now())
+  endDate        DateTime?
+  notes          String?
+  isActive       Boolean       @default(true)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  child          ChildProfile  @relation(fields: [childId], references: [id], onDelete: Cascade)
+  caregiver      User?         @relation(fields: [caregiverId], references: [id])
+  organization   Organization? @relation(fields: [organizationId], references: [id])
+
+  @@index([childId])
+  @@index([caregiverId])
+  @@index([isActive])
+}
+
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  token     String?   @unique
+  tokenHash String?   @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  userAgent String?
+  ipAddress String?
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([token])
+  @@index([tokenHash])
+  @@index([expiresAt])
+}
+
+// ============================================================
+// GEOGRAPHY AND CONTENT
+// ============================================================
+
+model Region {
+  id                String             @id @default(uuid())
+  code              String             @unique
+  name              String
+  nameEn            String?
+  level             Int                // 1=province, 2=district, 3=subdistrict
+  parentCode        String?
+  latitude          Float?
+  longitude         Float?
+  isActive          Boolean            @default(true)
+  createdAt         DateTime           @default(now())
+
+  parent            Region?            @relation("RegionHierarchy", fields: [parentCode], references: [code])
+  children          Region[]           @relation("RegionHierarchy")
+  childProfiles     ChildProfile[]
+  userProfiles      UserProfile[]
+  organizations     Organization[]
+  disasterIncidents DisasterIncident[]
+  shelters          Shelter[]
+  emergencyContacts EmergencyContact[]
+  evacuationMaps    EvacuationMap[]
+  contentRegions    ContentRegion[]
+  culturalProfiles  CulturalProfile[]
+
+  @@index([parentCode])
+  @@index([level])
+}
+
+model Language {
+  id                  String               @id @default(uuid())
+  code                String               @unique
+  name                String
+  nativeName          String?
+  isActive            Boolean              @default(true)
+  createdAt           DateTime             @default(now())
+
+  contentTranslations ContentTranslation[]
+  culturalProfiles    CulturalProfile[]
+}
+
+model CulturalProfile {
+  id            String   @id @default(uuid())
+  regionCode    String
+  languageCode  String
+  localTerms    Json?    // local terminology mappings
+  customContent Json?    // culturally-specific content overrides
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  region        Region   @relation(fields: [regionCode], references: [code])
+  language      Language @relation(fields: [languageCode], references: [code])
+
+  @@unique([regionCode, languageCode])
+  @@index([regionCode])
+}
+
+model DisasterType {
+  id                  String               @id @default(uuid())
+  code                String               @unique
+  name                String
+  nameEn              String?
+  iconUrl             String?
+  description         String?
+  isActive            Boolean              @default(true)
+  createdAt           DateTime             @default(now())
+
+  disasterIncidents   DisasterIncident[]
+  simulationScenarios SimulationScenario[]
+  emergencyGuides     EmergencyGuide[]
+  evacuationMaps      EvacuationMap[]
+  contentItems        ContentItem[]
+}
+
+model ContentItem {
+  id             String          @id @default(uuid())
+  slug           String          @unique
+  type           ContentType
+  status         ContentStatus   @default(DRAFT)
+  disasterTypeId String?
+  targetAgeMin   Int?
+  targetAgeMax   Int?
+  targetPhase    DisasterPhase?
+  authorId       String?
+  publishedAt    DateTime?
+  archivedAt     DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+
+  disasterType   DisasterType?   @relation(fields: [disasterTypeId], references: [id])
+  translations   ContentTranslation[]
+  regions        ContentRegion[]
+  versions       ContentVersion[]
+  mediaAssets    MediaAsset[]
+
+  @@index([status])
+  @@index([type])
+  @@index([disasterTypeId])
+  @@index([publishedAt])
+}
+
+model ContentTranslation {
+  id            String      @id @default(uuid())
+  contentItemId String
+  languageCode  String
+  title         String
+  body          String
+  summary       String?
+  metadata      Json?
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  contentItem   ContentItem @relation(fields: [contentItemId], references: [id], onDelete: Cascade)
+  language      Language    @relation(fields: [languageCode], references: [code])
+
+  @@unique([contentItemId, languageCode])
+  @@index([contentItemId])
+  @@index([languageCode])
+}
+
+model ContentRegion {
+  id            String      @id @default(uuid())
+  contentItemId String
+  regionCode    String
+  createdAt     DateTime    @default(now())
+
+  contentItem   ContentItem @relation(fields: [contentItemId], references: [id], onDelete: Cascade)
+  region        Region      @relation(fields: [regionCode], references: [code])
+
+  @@unique([contentItemId, regionCode])
+  @@index([contentItemId])
+  @@index([regionCode])
+}
+
+model ContentVersion {
+  id            String      @id @default(uuid())
+  contentItemId String
+  versionNumber Int
+  changeNote    String?
+  snapshot      Json        // full content snapshot at this version
+  createdBy     String?
+  createdAt     DateTime    @default(now())
+
+  contentItem   ContentItem @relation(fields: [contentItemId], references: [id], onDelete: Cascade)
+
+  @@unique([contentItemId, versionNumber])
+  @@index([contentItemId])
+}
+
+model MediaAsset {
+  id               String             @id @default(uuid())
+  contentItemId    String?
+  uploadedBy       String?
+  type             MediaType
+  url              String
+  thumbnailUrl     String?
+  filename         String
+  mimeType         String
+  sizeBytes        Int
+  width            Int?
+  height           Int?
+  durationSec      Float?
+  altText          String?
+  isPublic         Boolean            @default(false)
+  createdAt        DateTime           @default(now())
+
+  contentItem      ContentItem?       @relation(fields: [contentItemId], references: [id])
+  journalMedia     JournalMedia[]
+  memoryBoxEntries MemoryBoxEntry[]
+
+  @@index([contentItemId])
+  @@index([uploadedBy])
+  @@index([type])
+}
+
+model EmergencyGuide {
+  id             String       @id @default(uuid())
+  disasterTypeId String
+  title          String
+  titleEn        String?
+  body           String
+  bodyEn         String?
+  priority       Int          @default(0)
+  targetAgeGroup String?
+  isOfflineReady Boolean      @default(true)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  disasterType   DisasterType @relation(fields: [disasterTypeId], references: [id])
+
+  @@index([disasterTypeId])
+  @@index([priority])
+}
+
+model EvacuationMap {
+  id             String        @id @default(uuid())
+  regionCode     String
+  disasterTypeId String?
+  title          String
+  mapUrl         String
+  geoJsonData    Json?
+  isActive       Boolean       @default(true)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  region         Region        @relation(fields: [regionCode], references: [code])
+  disasterType   DisasterType? @relation(fields: [disasterTypeId], references: [id])
+
+  @@index([regionCode])
+  @@index([disasterTypeId])
+}
+
+model EmergencyContact {
+  id         String   @id @default(uuid())
+  regionCode String
+  name       String
+  phone      String
+  email      String?
+  type       String   // e.g. POLICE, HOSPITAL, SAR, NGO
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  region     Region   @relation(fields: [regionCode], references: [code])
+
+  @@index([regionCode])
+  @@index([type])
+}
+
+// ============================================================
+// PREVENTION
+// ============================================================
+
+model SimulationScenario {
+  id                 String               @id @default(uuid())
+  disasterTypeId     String?
+  title              String
+  description        String?
+  difficulty         SimulationDifficulty @default(BEGINNER)
+  targetAgeGroup     String?
+  targetAgeMin       Int?
+  targetAgeMax       Int?
+  isPublished        Boolean              @default(false)
+  publishedVersionId String?
+  estimatedMinutes   Int?
+  coverImageUrl      String?
+  createdBy          String?
+  createdAt          DateTime             @default(now())
+  updatedAt          DateTime             @updatedAt
+
+  disasterType       DisasterType?        @relation(fields: [disasterTypeId], references: [id])
+  publishedVersion   ScenarioVersion?     @relation("PublishedVersion", fields: [publishedVersionId], references: [id])
+  versions           ScenarioVersion[]    @relation("ScenarioAllVersions")
+  steps              ScenarioStep[]
+  attempts           SimulationAttempt[]
+
+  @@index([disasterTypeId])
+  @@index([isPublished])
+}
+
+model ScenarioVersion {
+  id                   String               @id @default(uuid())
+  scenarioId           String
+  versionNumber        Int
+  isActive             Boolean              @default(false)
+  changeNote           String?
+  createdAt            DateTime             @default(now())
+
+  scenario             SimulationScenario   @relation("ScenarioAllVersions", fields: [scenarioId], references: [id], onDelete: Cascade)
+  publishedInScenarios SimulationScenario[] @relation("PublishedVersion")
+  steps                ScenarioStep[]
+
+  @@unique([scenarioId, versionNumber])
+  @@index([scenarioId])
+}
+
+model ScenarioStep {
+  id          String               @id @default(uuid())
+  scenarioId  String?
+  versionId   String?
+  order       Int                  @default(0)
+  orderIndex  Int                  @default(0)
+  title       String
+  content     String
+  mediaUrl    String?
+  hint        String?
+  createdAt   DateTime             @default(now())
+
+  scenario    SimulationScenario?  @relation(fields: [scenarioId], references: [id], onDelete: Cascade)
+  version     ScenarioVersion?     @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  options     ScenarioOption[]
+  responses   SimulationResponse[]
+
+  @@index([scenarioId])
+  @@index([versionId])
+}
+
+model ScenarioOption {
+  id                  String               @id @default(uuid())
+  stepId              String
+  text                String
+  isCorrect           Boolean              @default(false)
+  isRecommended       Boolean              @default(false)
+  feedback            String?
+  explanation         String?
+  orderIndex          Int                  @default(0)
+  createdAt           DateTime             @default(now())
+
+  step                ScenarioStep         @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  responses           SimulationResponse[]
+  selectedInResponses SimulationResponse[] @relation("SelectedOption")
+
+  @@index([stepId])
+}
+
+model SimulationAttempt {
+  id                String               @id @default(uuid())
+  childId           String
+  scenarioId        String
+  scenarioVersionId String?
+  userId            String?
+  status            String               @default("IN_PROGRESS")
+  startedAt         DateTime             @default(now())
+  completedAt       DateTime?
+  score             Int?
+  maxScore          Int?
+  correctResponses  Int?
+  totalResponses    Int?
+  isPassed          Boolean?
+  durationSec       Int?
+
+  child             ChildProfile         @relation(fields: [childId], references: [id], onDelete: Cascade)
+  scenario          SimulationScenario   @relation(fields: [scenarioId], references: [id])
+  user              User?                @relation(fields: [userId], references: [id])
+  responses         SimulationResponse[]
+
+  @@index([childId])
+  @@index([scenarioId])
+  @@index([userId])
+}
+
+model SimulationResponse {
+  id               String            @id @default(uuid())
+  attemptId        String
+  stepId           String
+  optionId         String?
+  selectedOptionId String?
+  responseText     String?
+  isCorrect        Boolean?
+  timeTakenMs      Int?
+  timeSpentSeconds Int?
+  answeredAt       DateTime          @default(now())
+
+  attempt          SimulationAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  step             ScenarioStep      @relation(fields: [stepId], references: [id])
+  option           ScenarioOption?   @relation(fields: [optionId], references: [id])
+  selectedOption   ScenarioOption?   @relation("SelectedOption", fields: [selectedOptionId], references: [id])
+
+  @@unique([attemptId, stepId])
+  @@index([attemptId])
+  @@index([stepId])
+}
+
+model Assessment {
+  id               String               @id @default(uuid())
+  type             AssessmentType       @default(RESILIENCE)
+  title            String
+  description      String?
+  targetAgeGroup   String?
+  targetAgeMin     Int?
+  targetAgeMax     Int?
+  isPublished      Boolean              @default(false)
+  isActive         Boolean              @default(true)
+  currentVersionId String?
+  estimatedMinutes Int?
+  createdBy        String?
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  currentVersion   AssessmentVersion?   @relation("CurrentAssessmentVersion", fields: [currentVersionId], references: [id])
+  versions         AssessmentVersion[]  @relation("AssessmentAllVersions")
+  questions        AssessmentQuestion[]
+  submissions      AssessmentSubmission[]
+
+  @@index([type])
+  @@index([isPublished])
+  @@index([isActive])
+}
+
+model AssessmentVersion {
+  id                   String               @id @default(uuid())
+  assessmentId         String
+  versionNumber        Int
+  isActive             Boolean              @default(false)
+  changeNote           String?
+  createdAt            DateTime             @default(now())
+
+  assessment           Assessment           @relation("AssessmentAllVersions", fields: [assessmentId], references: [id], onDelete: Cascade)
+  currentInAssessments Assessment[]         @relation("CurrentAssessmentVersion")
+  questions            AssessmentQuestion[]
+  recommendationRules  RecommendationRule[]
+
+  @@unique([assessmentId, versionNumber])
+  @@index([assessmentId])
+}
+
+model AssessmentQuestion {
+  id           String               @id @default(uuid())
+  assessmentId String?
+  versionId    String?
+  orderIndex   Int
+  questionText String
+  questionType String               // SINGLE_CHOICE, MULTIPLE_CHOICE, SCALE, OPEN
+  weight       Float                @default(1.0)
+  createdAt    DateTime             @default(now())
+
+  assessment   Assessment?          @relation(fields: [assessmentId], references: [id], onDelete: Cascade)
+  version      AssessmentVersion?   @relation(fields: [versionId], references: [id], onDelete: Cascade)
+  options      AssessmentOption[]
+  responses    AssessmentResponse[]
+
+  @@index([assessmentId])
+  @@index([versionId])
+}
+
+model AssessmentOption {
+  id         String               @id @default(uuid())
+  questionId String
+  text       String
+  value      Int
+  orderIndex Int
+  createdAt  DateTime             @default(now())
+
+  question   AssessmentQuestion   @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  responses  AssessmentResponse[]
+
+  @@index([questionId])
+}
+
+model AssessmentSubmission {
+  id                  String                     @id @default(uuid())
+  assessmentId        String
+  assessmentVersionId String?
+  childId             String?
+  status              String                     @default("COMPLETED")
+  completedAt         DateTime?
+  submittedByUserId   String?
+  submittedAt         DateTime                   @default(now())
+  score               Float?
+  totalScore          Float?
+  interpretation      String?
+
+  assessment        Assessment                 @relation(fields: [assessmentId], references: [id])
+  child             ChildProfile?              @relation(fields: [childId], references: [id], onDelete: Cascade)
+  submittedByUser   User?                      @relation(fields: [submittedByUserId], references: [id])
+  responses         AssessmentResponse[]
+  recommendations   AssessmentRecommendation[]
+
+  @@index([assessmentId])
+  @@index([childId])
+  @@index([submittedByUserId])
+  @@index([submittedAt])
+}
+
+model AssessmentResponse {
+  id           String               @id @default(uuid())
+  submissionId String
+  questionId   String
+  optionId     String?
+  textResponse String?
+  scaleValue   Int?
+  value        Int?
+  isCorrect    Boolean?
+  createdAt    DateTime             @default(now())
+
+  submission   AssessmentSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  question     AssessmentQuestion   @relation(fields: [questionId], references: [id])
+  option       AssessmentOption?    @relation(fields: [optionId], references: [id])
+
+  @@index([submissionId])
+  @@index([questionId])
+}
+
+model RecommendationRule {
+  id                    String                     @id @default(uuid())
+  assessmentVersionId   String?
+  assessmentType        String?
+  assessmentTypeEnum    AssessmentType?
+  condition             Json?                      // scoring condition logic
+  criteria              Json?
+  priority              Int                        @default(0)
+  title                 String?
+  description           String?
+  recommendationType    String?
+  recommendationContent Json?
+  resourceUrls          String[]
+  isActive              Boolean                    @default(true)
+  createdAt             DateTime                   @default(now())
+  updatedAt             DateTime                   @updatedAt
+
+  assessmentVersion     AssessmentVersion?         @relation(fields: [assessmentVersionId], references: [id])
+  recommendations       AssessmentRecommendation[]
+
+  @@index([assessmentType])
+  @@index([assessmentVersionId])
+  @@index([isActive])
+}
+
+model AssessmentRecommendation {
+  id                 String               @id @default(uuid())
+  submissionId       String
+  ruleId             String?
+  recommendationType String?
+  content            Json?
+  createdAt          DateTime             @default(now())
+
+  submission         AssessmentSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  rule               RecommendationRule?  @relation(fields: [ruleId], references: [id])
+
+  @@index([submissionId])
+  @@index([ruleId])
+}
+
+model SafetyPassport {
+  id             String                  @id @default(uuid())
+  childId        String                  @unique
+  passportCode   String?                 @unique @default(uuid())
+  status         String                  @default("ACTIVE")
+  issuedAt       DateTime                @default(now())
+  expiresAt      DateTime?
+  qrCodeUrl      String?
+  createdAt      DateTime                @default(now())
+  updatedAt      DateTime                @updatedAt
+
+  child          ChildProfile            @relation(fields: [childId], references: [id], onDelete: Cascade)
+  contacts       SafetyPassportContact[]
+  familyMembers  FamilyMember[]
+  meetingPoints  MeetingPoint[]
+  emergencyNeeds EmergencyNeed[]
+
+  @@index([passportCode])
+  @@index([status])
+}
+
+model SafetyPassportContact {
+  id           String         @id @default(uuid())
+  passportId   String
+  name         String
+  phone        String
+  relationship String
+  isPrimary    Boolean        @default(false)
+  orderIndex   Int            @default(0)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  passport     SafetyPassport @relation(fields: [passportId], references: [id], onDelete: Cascade)
+
+  @@index([passportId])
+}
+
+model FamilyMember {
+  id           String         @id @default(uuid())
+  passportId   String
+  name         String
+  relationship String
+  photoUrl     String?
+  phoneNumber  String?
+  createdAt    DateTime       @default(now())
+
+  passport     SafetyPassport @relation(fields: [passportId], references: [id], onDelete: Cascade)
+
+  @@index([passportId])
+}
+
+model MeetingPoint {
+  id          String         @id @default(uuid())
+  passportId  String
+  name        String
+  description String?
+  latitude    Float?
+  longitude   Float?
+  address     String?
+  orderIndex  Int            @default(0)
+  createdAt   DateTime       @default(now())
+
+  passport    SafetyPassport @relation(fields: [passportId], references: [id], onDelete: Cascade)
+
+  @@index([passportId])
+}
+
+model EmergencyNeed {
+  id          String         @id @default(uuid())
+  passportId  String
+  needType    String
+  description String
+  createdAt   DateTime       @default(now())
+
+  passport    SafetyPassport @relation(fields: [passportId], references: [id], onDelete: Cascade)
+
+  @@index([passportId])
+}
+
+// ============================================================
+// DISASTER RESPONSE
+// ============================================================
+
+model DisasterIncident {
+  id                     String                @id @default(uuid())
+  disasterTypeId         String
+  organizationId         String?
+  managingOrganizationId String?
+  title                  String
+  description            String?
+  status                 IncidentStatus        @default(ACTIVE)
+  severity               IncidentSeverity      @default(MEDIUM)
+  regionCode             String?
+  latitude               Float?
+  longitude              Float?
+  occurredAt             DateTime?             @default(now())
+  startedAt              DateTime?             @default(now())
+  resolvedAt             DateTime?
+  affectedCount          Int?
+  createdBy              String?
+  createdByUserId        String?
+  createdAt              DateTime              @default(now())
+  updatedAt              DateTime              @updatedAt
+
+  disasterType           DisasterType          @relation(fields: [disasterTypeId], references: [id])
+  organization           Organization?         @relation(fields: [organizationId], references: [id])
+  managingOrganization   Organization?         @relation("ManagingOrg", fields: [managingOrganizationId], references: [id])
+  region                 Region?               @relation(fields: [regionCode], references: [code])
+  childRecords           IncidentChildRecord[]
+  supportRequests        SupportRequest[]
+  syncOperations         SyncOperation[]
+
+  @@index([status])
+  @@index([severity])
+  @@index([regionCode])
+  @@index([occurredAt])
+}
+
+model IncidentChildRecord {
+  id                    String                 @id @default(uuid())
+  incidentId            String
+  childId               String
+  status                String?                @default("REPORTED")
+  registeredByUserId    String?
+  recordedAt            DateTime               @default(now())
+  notes                 String?
+
+  incident              DisasterIncident       @relation(fields: [incidentId], references: [id], onDelete: Cascade)
+  child                 ChildProfile           @relation(fields: [childId], references: [id])
+  safetyStatuses        ChildSafetyStatus[]
+  locationRecords       ChildLocationRecord[]
+  reunificationRequests ReunificationRequest[]
+
+  @@unique([incidentId, childId])
+  @@index([incidentId])
+  @@index([childId])
+}
+
+model ChildSafetyStatus {
+  id                    String                 @id @default(uuid())
+  childId               String?
+  incidentChildRecordId String?
+  status                String                 @default("SAFE")
+  statusEnum            ChildSafetyStatusValue?
+  reportedBy            String?
+  recordedByUserId      String?
+  locationId            String?
+  notes                 String?
+  reportedAt            DateTime               @default(now())
+
+  child                 ChildProfile?          @relation(fields: [childId], references: [id], onDelete: Cascade)
+  incidentChildRecord   IncidentChildRecord?   @relation(fields: [incidentChildRecordId], references: [id])
+  location              ChildLocationRecord?   @relation(fields: [locationId], references: [id])
+
+  @@index([childId])
+  @@index([incidentChildRecordId])
+  @@index([reportedAt])
+}
+
+model Shelter {
+  id               String                @id @default(uuid())
+  regionCode       String
+  name             String
+  address          String?
+  latitude         Float?
+  longitude        Float?
+  capacity         Int?
+  currentOccupancy Int?
+  isActive         Boolean               @default(true)
+  hasChildFacility Boolean               @default(false)
+  contactPhone     String?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+
+  region           Region                @relation(fields: [regionCode], references: [code])
+  locationRecords  ChildLocationRecord[]
+
+  @@index([regionCode])
+  @@index([isActive])
+}
+
+model ChildLocationRecord {
+  id                    String                 @id @default(uuid())
+  childId               String?
+  incidentChildRecordId String?
+  shelterId             String?
+  latitude              Float?
+  longitude             Float?
+  address               String?
+  locationDescription   String?
+  recordedBy            String?
+  recordedByUserId      String?
+  accessLevel           String                 @default("RESTRICTED")
+  recordedAt            DateTime               @default(now())
+  notes                 String?
+
+  child                 ChildProfile?          @relation(fields: [childId], references: [id], onDelete: Cascade)
+  incidentChildRecord   IncidentChildRecord?   @relation(fields: [incidentChildRecordId], references: [id])
+  shelter               Shelter?               @relation(fields: [shelterId], references: [id])
+  safetyStatuses        ChildSafetyStatus[]
+
+  @@index([childId])
+  @@index([incidentChildRecordId])
+  @@index([shelterId])
+  @@index([recordedAt])
+}
+
+model ReunificationRequest {
+  id                    String                 @id @default(uuid())
+  childId               String?
+  incidentChildRecordId String?
+  requestedBy           String?
+  requestedByUserId     String?
+  status                String                 @default("PENDING")
+  statusEnum            ReunificationStatus?
+  claimantName          String
+  claimantPhone         String?
+  claimantContact       String?
+  relationship          String?
+  claimantRelationship  String?
+  notes                 String?
+  requestedAt           DateTime               @default(now())
+  resolvedAt            DateTime?
+
+  child                 ChildProfile?          @relation(fields: [childId], references: [id])
+  incidentChildRecord   IncidentChildRecord?   @relation(fields: [incidentChildRecordId], references: [id])
+  verifications         IdentityVerification[]
+  verificationsRel      IdentityVerification[] @relation("ReunificationVerifications")
+  handoverRecords       HandoverRecord[]
+  handoverRecordsRel    HandoverRecord[]       @relation("ReunificationHandovers")
+
+  @@index([childId])
+  @@index([incidentChildRecordId])
+  @@index([status])
+}
+
+model IdentityVerification {
+  id                     String                @id @default(uuid())
+  requestId              String?
+  reunificationRequestId String?
+  verifiedBy             String?
+  verifiedByUserId       String?
+  status                 VerificationStatus    @default(PENDING)
+  method                 String?
+  verificationMethod     String?
+  verificationNotes      String?
+  outcome                String?
+  documentUrl            String?
+  notes                  String?
+  verifiedAt             DateTime?
+  createdAt              DateTime              @default(now())
+
+  request                ReunificationRequest? @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  reunificationRequest   ReunificationRequest? @relation("ReunificationVerifications", fields: [reunificationRequestId], references: [id], onDelete: Cascade)
+
+  @@index([requestId])
+  @@index([reunificationRequestId])
+}
+
+model HandoverRecord {
+  id                     String                @id @default(uuid())
+  requestId              String?
+  reunificationRequestId String?
+  handedOverBy           String?
+  handedOverByUserId     String?
+  receivedBy             String?
+  receivedByName         String?
+  receivedByRelationship String?
+  handoverNotes          String?
+  handoverAt             DateTime              @default(now())
+  documentUrl            String?
+  notes                  String?
+  createdAt              DateTime              @default(now())
+
+  request                ReunificationRequest? @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  reunificationRequest   ReunificationRequest? @relation("ReunificationHandovers", fields: [reunificationRequestId], references: [id], onDelete: Cascade)
+
+  @@index([requestId])
+  @@index([reunificationRequestId])
+}
+
+model SupportRequest {
+  id                String              @id @default(uuid())
+  incidentId        String?
+  childId           String?
+  requestedBy       String?
+  requestedByUserId String?
+  type              String?
+  supportType       String?
+  requestType       String?
+  notes             String?
+  status            String              @default("OPEN")
+  priority          Int                 @default(0)
+  urgency           String?
+  title             String?
+  description       String?
+  resolvedAt        DateTime?
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+
+  incident          DisasterIncident?   @relation(fields: [incidentId], references: [id])
+  assignments       SupportAssignment[]
+  materials         SupportMaterial[]
+
+  @@index([incidentId])
+  @@index([childId])
+  @@index([status])
+}
+
+model SupportAssignment {
+  id               String          @id @default(uuid())
+  requestId        String?
+  supportRequestId String?
+  assignedTo       String?
+  assignedToUserId String?
+  assignedUserId   String?
+  assignedBy       String?
+  assignedByUserId String?
+  status           String          @default("IN_PROGRESS")
+  assignedAt       DateTime        @default(now())
+  notes            String?
+
+  request          SupportRequest? @relation(fields: [supportRequestId], references: [id], onDelete: Cascade)
+
+  @@index([supportRequestId])
+  @@index([assignedTo])
+  @@index([assignedUserId])
+}
+
+model SupportMaterial {
+  id          String          @id @default(uuid())
+  requestId   String?
+  name        String?
+  title       String?
+  type        String?
+  contentUrl  String?
+  duration    String?
+  order       Int             @default(0)
+  orderIndex  Int             @default(0)
+  language    String?         @default("id")
+  quantity    Int?
+  unit        String?
+  isActive    Boolean         @default(true)
+  deliveredAt DateTime?
+  createdAt   DateTime        @default(now())
+
+  request     SupportRequest? @relation(fields: [requestId], references: [id], onDelete: Cascade)
+
+  @@index([requestId])
+  @@index([language])
+  @@index([isActive])
+}
+
+model OfflineContentPackage {
+  id              String    @id @default(uuid())
+  version         String    @unique
+  name            String?
+  title           String?
+  description     String?
+  language        String?   @default("id")
+  packageType     String?
+  sizeBytes       Int?
+  downloadUrl     String?
+  checksum        String?
+  contentManifest Json?
+  isActive        Boolean   @default(true)
+  publishedAt     DateTime  @default(now())
+  expiresAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([isActive])
+  @@index([language])
+}
+
+model SyncOperation {
+  id              String            @id @default(uuid())
+  deviceId        String?
+  userId          String
+  incidentId      String?
+  entityType      String?
+  entityId        String?
+  operation       String?           // CREATE, UPDATE, DELETE
+  operationType   String?
+  resourceType    String?
+  resourceId      String?
+  payload         Json
+  status          String            @default("PENDING")
+  conflictData    Json?
+  clientTimestamp DateTime?
+  syncedAt        DateTime?
+  createdAt       DateTime          @default(now())
+
+  incident        DisasterIncident? @relation(fields: [incidentId], references: [id])
+
+  @@index([deviceId])
+  @@index([userId])
+  @@index([status])
+  @@index([entityType, entityId])
+}
+
+// ============================================================
+// RECOVERY
+// ============================================================
+
+model RecoveryJournalEntry {
+  id           String         @id @default(uuid())
+  childId      String
+  title        String?
+  content      String?
+  mood         Int?           // 1-5 scale
+  privacy      JournalPrivacy @default(PRIVATE)
+  activityType String?
+  tags         String[]
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  deletedAt    DateTime?
+
+  child        ChildProfile   @relation(fields: [childId], references: [id], onDelete: Cascade)
+  media        JournalMedia[]
+
+  @@index([childId])
+  @@index([privacy])
+  @@index([createdAt])
+  @@index([deletedAt])
+}
+
+model JournalMedia {
+  id         String               @id @default(uuid())
+  entryId    String
+  assetId    String
+  orderIndex Int                  @default(0)
+  createdAt  DateTime             @default(now())
+
+  entry      RecoveryJournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  asset      MediaAsset           @relation(fields: [assetId], references: [id])
+
+  @@index([entryId])
+}
+
+model CreativeActivity {
+  id                String             @id @default(uuid())
+  title             String
+  description       String?
+  activityType      String             // ART, MUSIC, WRITING, MOVEMENT, PLAY
+  ageGroupMin       Int?
+  ageGroupMax       Int?
+  durationMin       Int?
+  materials         String[]
+  instructions      String?
+  thumbnailUrl      String?
+  isPublished       Boolean            @default(false)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  growthReflections GrowthReflection[]
+
+  @@index([activityType])
+  @@index([isPublished])
+}
+
+model GrowthReflection {
+  id             String            @id @default(uuid())
+  childId        String
+  activityId     String?
+  reflectionText String?
+  rating         Int?
+  completedAt    DateTime          @default(now())
+
+  child          ChildProfile      @relation(fields: [childId], references: [id], onDelete: Cascade)
+  activity       CreativeActivity? @relation(fields: [activityId], references: [id])
+  aspects        GrowthAspect[]
+
+  @@index([childId])
+  @@index([activityId])
+}
+
+model GrowthAspect {
+  id           String           @id @default(uuid())
+  reflectionId String
+  aspectType   GrowthAspectType
+  score        Int?
+  notes        String?
+
+  reflection   GrowthReflection @relation(fields: [reflectionId], references: [id], onDelete: Cascade)
+
+  @@index([reflectionId])
+}
+
+model CareCircleMember {
+  id           String                 @id @default(uuid())
+  childId      String
+  userId       String
+  role         CareCircleRole         @default(VIEWER)
+  joinedAt     DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+
+  child        ChildProfile           @relation("ChildCareCircles", fields: [childId], references: [id], onDelete: Cascade)
+  permissions  CareCirclePermission[]
+  supportNotes SupportNote[]
+
+  @@unique([childId, userId])
+  @@index([childId])
+  @@index([userId])
+}
+
+model CareCirclePermission {
+  id         String           @id @default(uuid())
+  memberId   String
+  permission String           // e.g. VIEW_JOURNAL, ADD_NOTES, VIEW_PROGRESS
+  grantedAt  DateTime         @default(now())
+
+  member     CareCircleMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([memberId, permission])
+  @@index([memberId])
+}
+
+model CareCircleInvitation {
+  id        String           @id @default(uuid())
+  childId   String
+  invitedBy String
+  email     String?
+  phone     String?
+  role      CareCircleRole   @default(VIEWER)
+  token     String           @unique
+  status    InvitationStatus @default(PENDING)
+  expiresAt DateTime
+  createdAt DateTime         @default(now())
+
+  @@index([childId])
+  @@index([token])
+  @@index([status])
+}
+
+model SupportNote {
+  id        String           @id @default(uuid())
+  memberId  String
+  childId   String
+  content   String
+  isPrivate Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+
+  member    CareCircleMember @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@index([memberId])
+  @@index([childId])
+}
+
+model ReferralCase {
+  id             String         @id @default(uuid())
+  childId        String
+  referredBy     String
+  referredTo     String?
+  organizationId String?
+  status         ReferralStatus @default(OPEN)
+  reason         String
+  urgency        Int            @default(2) // 1-5
+  notes          String?
+  closedAt       DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  @@index([childId])
+  @@index([status])
+  @@index([referredBy])
+}
+
+model GriefActivity {
+  id           String       @id @default(uuid())
+  childId      String
+  activityType String       // MEMORY_SHARING, LETTER_WRITING, MEMORIAL_ART, RITUAL
+  title        String?
+  content      String?
+  completedAt  DateTime     @default(now())
+
+  child        ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  @@index([childId])
+  @@index([activityType])
+}
+
+model EmotionCheckIn {
+  id          String       @id @default(uuid())
+  childId     String
+  emotion     String
+  intensity   Int          // 1-5
+  context     String?
+  checkedInAt DateTime     @default(now())
+
+  child       ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  @@index([childId])
+  @@index([checkedInAt])
+}
+
+model MemoryBoxEntry {
+  id          String       @id @default(uuid())
+  childId     String
+  title       String
+  description String?
+  assetId     String?
+  memoryDate  DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  child       ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+  asset       MediaAsset?  @relation(fields: [assetId], references: [id])
+
+  @@index([childId])
+}
+
+model LittleStep {
+  id              String       @id @default(uuid())
+  childId         String
+  title           String
+  description     String?
+  targetDate      DateTime?
+  completedAt     DateTime?
+  celebrationNote String?
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  child           ChildProfile @relation(fields: [childId], references: [id], onDelete: Cascade)
+
+  @@index([childId])
+  @@index([completedAt])
+}
+
+model GriefSupportConnection {
+  id             String    @id @default(uuid())
+  childId        String
+  professionalId String
+  connectionType String    // COUNSELOR, THERAPIST, PEER_SUPPORT
+  startedAt      DateTime  @default(now())
+  endedAt        DateTime?
+  notes          String?
+  createdAt      DateTime  @default(now())
+
+  @@index([childId])
+  @@index([professionalId])
+}
+
+// ============================================================
+// SMART TECHNOLOGY / ANALYTICS
+// ============================================================
+
+model DashboardSnapshot {
+  id           String   @id @default(uuid())
+  snapshotType String
+  regionCode   String?
+  periodStart  DateTime
+  periodEnd    DateTime
+  data         Json
+  generatedAt  DateTime @default(now())
+
+  @@index([snapshotType])
+  @@index([regionCode])
+  @@index([generatedAt])
+}
+
+model Facility {
+  id                 String              @id @default(uuid())
+  name               String
+  type               String              // SCHOOL, HEALTH_CENTER, COMMUNITY_CENTER
+  regionCode         String?
+  address            String?
+  latitude           Float?
+  longitude          Float?
+  capacity           Int?
+  isActive           Boolean             @default(true)
+  metadata           Json?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+
+  programEvaluations ProgramEvaluation[]
+
+  @@index([regionCode])
+  @@index([type])
+  @@index([isActive])
+}
+
+model ProgramEvaluation {
+  id          String    @id @default(uuid())
+  facilityId  String?
+  programName String
+  periodStart DateTime
+  periodEnd   DateTime
+  metrics     Json
+  evaluatedBy String?
+  notes       String?
+  createdAt   DateTime  @default(now())
+
+  facility    Facility? @relation(fields: [facilityId], references: [id])
+
+  @@index([facilityId])
+  @@index([periodStart])
+}
+
+model AIConversation {
+  id        String       @id @default(uuid())
+  userId    String
+  childId   String?
+  title     String?
+  context   String?      // e.g. GRIEF_SUPPORT, LEARNING, GENERAL
+  isActive  Boolean      @default(true)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  AIMessage[]
+  usageLogs AIUsageLog[]
+
+  @@index([userId])
+  @@index([childId])
+  @@index([isActive])
+}
+
+model AIMessage {
+  id             String         @id @default(uuid())
+  conversationId String
+  role           AIMessageRole
+  content        String
+  tokensUsed     Int?
+  modelName      String?
+  createdAt      DateTime       @default(now())
+
+  conversation   AIConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@index([createdAt])
+}
+
+model AIUsageLog {
+  id               String         @id @default(uuid())
+  conversationId   String
+  userId           String
+  promptTokens     Int
+  completionTokens Int
+  totalTokens      Int
+  modelName        String
+  costUsd          Float?
+  createdAt        DateTime       @default(now())
+
+  conversation     AIConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([conversationId])
+  @@index([createdAt])
+}
+
+model TrainingModule {
+  id               String             @id @default(uuid())
+  title            String
+  description      String?
+  targetRole       String?
+  contentUrl       String?
+  estimatedMinutes Int?
+  isPublished      Boolean            @default(false)
+  orderIndex       Int                @default(0)
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  progress         TrainingProgress[]
+
+  @@index([targetRole])
+  @@index([isPublished])
+}
+
+model TrainingProgress {
+  id          String         @id @default(uuid())
+  moduleId    String
+  childId     String?
+  userId      String?
+  status      TrainingStatus @default(NOT_STARTED)
+  startedAt   DateTime?
+  completedAt DateTime?
+  score       Float?
+  attempts    Int            @default(0)
+  updatedAt   DateTime       @updatedAt
+
+  module      TrainingModule @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  child       ChildProfile?  @relation(fields: [childId], references: [id])
+
+  @@unique([moduleId, childId])
+  @@index([moduleId])
+  @@index([childId])
+  @@index([userId])
+  @@index([status])
+}
+
+model ReferralProtocol {
+  id               String   @id @default(uuid())
+  title            String
+  description      String?
+  triggerCondition Json
+  steps            Json
+  targetRole       String?
+  isActive         Boolean  @default(true)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([isActive])
+}
+
+model SupervisionSession {
+  id           String    @id @default(uuid())
+  supervisorId String
+  superviseeId String
+  scheduledAt  DateTime
+  startedAt    DateTime?
+  endedAt      DateTime?
+  notes        String?
+  status       String    @default("SCHEDULED") // SCHEDULED, COMPLETED, CANCELLED
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  supervisor   User      @relation("SupervisorSessions", fields: [supervisorId], references: [id])
+  supervisee   User      @relation("SupervisedSessions", fields: [superviseeId], references: [id])
+
+  @@index([supervisorId])
+  @@index([superviseeId])
+  @@index([scheduledAt])
+}
+
+model AuditLog {
+  id             String       @id @default(uuid())
+  actorId        String?
+  userId         String?
+  action         String
+  resourceType   String?
+  resourceId     String?
+  organizationId String?
+  reason         String?
+  metadata       Json?
+  entityType     String?
+  entityId       String?
+  oldData        Json?
+  newData        Json?
+  ipAddress      String?
+  userAgent      String?
+  requestId      String?
+  createdAt      DateTime     @default(now())
+
+  user           User?        @relation(fields: [userId], references: [id])
+
+  @@index([actorId])
+  @@index([userId])
+  @@index([action])
+  @@index([resourceType, resourceId])
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}

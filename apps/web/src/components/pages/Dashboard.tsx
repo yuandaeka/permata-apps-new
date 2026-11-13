@@ -3,7 +3,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { useCulture } from "@/context/CultureContext";
-import { HopeTree } from "@permata/ui";
+import { HopeTree } from "@/components/HopeTree";
 import {
   Users,
   ShieldCheck,
@@ -58,7 +58,7 @@ const Dashboard = () => {
             </div>
 
             {/* Tele Screening */}
-            <Link href="/tele-screening">
+            <Link href="/tele-screening" prefetch={false}>
               <div className="p-8 bg-white rounded-[3rem] shadow-sm hover:shadow-2xl transition-all border border-black/5 group cursor-pointer">
                 <ShieldCheck
                   size={40}
@@ -74,7 +74,7 @@ const Dashboard = () => {
             </Link>
 
             {/* AI Companion */}
-            <Link href="/ai-companion">
+            <Link href="/ai-companion" prefetch={false}>
               <div className="p-8 bg-white rounded-[3rem] shadow-sm hover:shadow-2xl transition-all border border-black/5 group cursor-pointer">
                 <MessageCircle
                   size={40}
@@ -90,7 +90,7 @@ const Dashboard = () => {
             </Link>
 
             {/* MoodFoodAnalyzer */}
-            <Link href="/mood-food">
+            <Link href="/mood-food" prefetch={false}>
               <div className="p-8 bg-white rounded-[3rem] shadow-sm hover:shadow-2xl transition-all border border-black/5 group cursor-pointer">
                 <Camera
                   size={40}
@@ -139,22 +139,22 @@ const Dashboard = () => {
 
         <div className="grid md:grid-cols-3 gap-6">
           {[
-            { title: "Jurnal Hikmah", xp: "+50 XP Refleksi" },
-            { title: "Latihan Napas", xp: "+30 XP Tenang" },
-            { title: "Meditasi Budaya", xp: "+40 XP Fokus" },
+            { title: "Jurnal Hikmah", xp: "+50 XP Refleksi", href: "/jurnal" },
+            { title: "Latihan Napas", xp: "+30 XP Tenang", href: "/game-breath" },
+            { title: "Meditasi Budaya", xp: "+40 XP Fokus", href: "/game-healing" },
           ].map((goal) => (
             <div
               key={goal.title}
-              className="bg-white/40 p-8 rounded-[3rem] border border-white flex items-center gap-6"
+              className="bg-white/40 p-8 rounded-[3rem] border border-white flex items-center gap-6 hover:shadow-xl transition-all"
             >
-              <div>
-                <h5 className="font-black tracking-tighter text-lg">
+              <Link href={goal.href} prefetch={false} className="flex-1 cursor-pointer">
+                <h5 className="font-black tracking-tighter text-lg hover:underline">
                   {goal.title}
                 </h5>
                 <p className="text-[10px] opacity-50 font-bold uppercase tracking-widest italic">
                   {goal.xp}
                 </p>
-              </div>
+              </Link>
               <input
                 type="checkbox"
                 defaultChecked={false}
@@ -175,7 +175,7 @@ const Dashboard = () => {
         </div>
 
         <div className="grid md:grid-cols-4 gap-8">
-          <Link href="/game-quake">
+          <Link href="/game-quake" prefetch={false}>
             <div className="bg-white p-10 rounded-[3rem] shadow-md hover:shadow-2xl transition-all border border-black/5 cursor-pointer hover:-translate-y-2 duration-300">
               <h4 className="text-xl font-black mb-3">Sigap Bencana</h4>
               <p className="text-xs opacity-50 font-bold uppercase tracking-wider italic">
@@ -184,7 +184,7 @@ const Dashboard = () => {
             </div>
           </Link>
 
-          <Link href="/game-healing">
+          <Link href="/game-healing" prefetch={false}>
             <div className="bg-white p-10 rounded-[3rem] shadow-md hover:shadow-2xl transition-all border border-black/5 cursor-pointer hover:-translate-y-2 duration-300">
               <h4 className="text-xl font-black mb-3">Pinch and Drop</h4>
               <p className="text-xs opacity-50 font-bold uppercase tracking-wider italic">
@@ -193,7 +193,7 @@ const Dashboard = () => {
             </div>
           </Link>
 
-          <Link href="/game-adventure">
+          <Link href="/game-adventure" prefetch={false}>
             <div className="bg-white p-10 rounded-[3rem] shadow-md hover:shadow-2xl transition-all border border-black/5 cursor-pointer hover:-translate-y-2 duration-300">
               <h4 className="text-xl font-black mb-3">Adventure Budaya</h4>
               <p className="text-xs opacity-50 font-bold uppercase tracking-wider italic">
@@ -202,7 +202,7 @@ const Dashboard = () => {
             </div>
           </Link>
 
-          <Link href="/roleplay">
+          <Link href="/roleplay" prefetch={false}>
             <div className="bg-black text-white p-10 rounded-[3rem] shadow-xl hover:shadow-2xl transition-all cursor-pointer hover:-translate-y-2 duration-300">
               <h4 className="text-xl font-black mb-3">Roleplay Psikoedukasi</h4>
               <p className="text-xs opacity-70 font-bold uppercase tracking-wider italic">
@@ -211,7 +211,7 @@ const Dashboard = () => {
             </div>
           </Link>
 
-          <Link href="/game-siagaminang">
+          <Link href="/game-siagaminang" prefetch={false}>
             <div className="bg-white p-10 rounded-[3rem] shadow-md hover:shadow-2xl transition-all border border-black/5 cursor-pointer hover:-translate-y-2 duration-300">
               <h4 className="text-xl font-black mb-3">Siaga Minang</h4>
               <p className="text-xs opacity-50 font-bold uppercase tracking-wider italic">
@@ -220,7 +220,7 @@ const Dashboard = () => {
             </div>
           </Link>
 
-          <Link href="/game-breath">
+          <Link href="/game-breath" prefetch={false}>
             <div className="bg-white p-10 rounded-[3rem] shadow-md hover:shadow-2xl transition-all border border-black/5 cursor-pointer hover:-translate-y-2 duration-300">
               <h4 className="text-xl font-black mb-3">Breathing Calm</h4>
               <p className="text-xs opacity-50 font-bold uppercase tracking-wider italic">

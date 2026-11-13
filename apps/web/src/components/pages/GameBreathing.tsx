@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { motion } from "framer-motion";
 import { Gamepad2, ArrowRight } from "lucide-react";
 
@@ -41,12 +42,13 @@ const GameBreathing = () => {
         </a>
 
         {/* BACK BUTTON */}
-        <button
-          onClick={() => window.history.back()}
-          className="text-xs font-black opacity-30 uppercase tracking-[0.2em] hover:opacity-100 transition-opacity"
+        <Link
+          href="/dashboard"
+          prefetch={false}
+          className="inline-block text-xs font-black opacity-30 uppercase tracking-[0.2em] hover:opacity-100 transition-opacity"
         >
           Kembali ke Dashboard
-        </button>
+        </Link>
       </motion.div>
     </div>
   );

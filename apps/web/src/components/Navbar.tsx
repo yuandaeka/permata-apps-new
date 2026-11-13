@@ -12,29 +12,33 @@ export default function Navbar() {
       <div className="max-w-7xl mx-auto flex justify-between items-center">
         <Link
           href="/"
+          prefetch={false}
           className="text-3xl font-black tracking-tighter uppercase italic flex items-center gap-2"
         >
           PERMATA <span className="w-2 h-2 rounded-full bg-green-500"></span>
         </Link>
 
-        <div className="hidden md:flex gap-10 font-black uppercase text-[10px] tracking-[0.2em]">
+        <div className="flex gap-4 md:gap-10 font-black uppercase text-[10px] tracking-[0.1em] md:tracking-[0.2em] items-center">
           <Link
             href="/"
-            className="hover:opacity-50 transition flex items-center gap-2 underline-offset-8 hover:underline"
+            prefetch={false}
+            className="hover:opacity-50 transition flex items-center gap-1.5 underline-offset-8 hover:underline"
           >
-            <Home size={14} /> Home
+            <Home size={14} /> <span className="hidden sm:inline">Home</span>
           </Link>
           <Link
             href="/dashboard"
-            className="hover:opacity-50 transition flex items-center gap-2 underline-offset-8 hover:underline"
+            prefetch={false}
+            className="hover:opacity-50 transition flex items-center gap-1.5 underline-offset-8 hover:underline"
           >
             <LayoutDashboard size={14} /> Dashboard
           </Link>
           <Link
             href="/jurnal"
-            className="hover:opacity-50 transition flex items-center gap-2 underline-offset-8 hover:underline"
+            prefetch={false}
+            className="hover:opacity-50 transition flex items-center gap-1.5 underline-offset-8 hover:underline"
           >
-            <BookOpen size={14} /> Jurnal Hikmah
+            <BookOpen size={14} /> Jurnal
           </Link>
         </div>
 

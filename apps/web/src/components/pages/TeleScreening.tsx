@@ -1,12 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { dassQuestions } from "@/data/dassQuestions";
 import { calculateDASS, interpretDASS } from "@/utils/dassScoring";
-import { useRouter } from "next/navigation";
 
 const TeleScreening = () => {
-  const router = useRouter();
 
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState<(number | null)[]>(
@@ -90,12 +89,13 @@ const TeleScreening = () => {
             </p>
           </div>
 
-          <button
-            onClick={() => router.push("/dashboard")}
-            className="mt-10 w-full py-3 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold hover:scale-105 transition-all duration-300"
+          <Link
+            href="/dashboard"
+            prefetch={false}
+            className="block text-center mt-10 w-full py-3 rounded-2xl bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-semibold hover:scale-105 transition-all duration-300"
           >
             Selesai &amp; Kembali ke Dashboard
-          </button>
+          </Link>
         </div>
       </div>
     );
