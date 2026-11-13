@@ -1,7 +1,7 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { NextRequest, NextResponse } from "next/server";
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+export const maxDuration = 60;
 
 export async function POST(req: NextRequest) {
   try {
@@ -14,6 +14,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    const apiKey = process.env.GEMINI_API_KEY || process.env.AI_API_KEY;
+    if (!apiKey) {
+      return NextResponse.json(
+        { reply: "Konfigurasi GEMINI_API_KEY belum diatur pada server." },
+        { status: 500 },
+      );
+    }
+
+    const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({
       model: "gemini-2.5-flash",
     });

@@ -1,0 +1,15 @@
+node_modules
+.next
+.turbo
+.vercel
+apps/api/dist
+.git
+.legacy_vite
+*.docx
+Design_System.md
+PRD Permata.md
+coverage
+*.tsbuildinfo
+.env
+.env*.local
+

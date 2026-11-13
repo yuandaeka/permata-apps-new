@@ -92,6 +92,28 @@ pnpm --filter @permata/web start
 
 ---
 
+## ☁️ Panduan Deployment ke Vercel (1 Proyek Gabungan - Vercel Services)
+
+Repositori ini telah dikonfigurasi untuk men-deploy **Frontend (`apps/web`)** dan **Backend (`apps/api`)** sekaligus dalam **1 proyek Vercel** menggunakan fitur **[Vercel Services (Beta)](https://vercel.com/docs/services)** melalui file [vercel.json](vercel.json) di root repositori.
+
+### Arsitektur Routing Satu Proyek (`vercel.json`)
+- **Service `frontend` (`apps/web`)**: Melayani seluruh halaman Next.js serta rute AI internal (`/api/chat` dan `/api/mood-food`), dan memiliki *private service binding* `BACKEND_INTERNAL_URL` ke service `backend`.
+- **Service `backend` (`apps/api/src/app.ts`)**: Melayani seluruh endpoint Express API (`/api/v1/*`), dokumentasi Swagger (`/api/docs`, `/api/docs.json`), dan `/health` pada domain yang sama.
+
+### Langkah Deploy Langsung (1 Proyek)
+1. Buka [Vercel Dashboard](https://vercel.com/new), klik **Add New... > Project**, lalu import repositori `permata-apps-new`.
+2. Biarkan **Root Directory** tetap pada nilai default (`.` / root repositori).
+3. Tambahkan **Environment Variables** berikut pada pengaturan proyek Vercel:
+   - `DATABASE_URL`: Connection string PostgreSQL produksi Anda.
+   - `ACCESS_TOKEN_SECRET`: Secret key JWT minimal 32 karakter.
+   - `REFRESH_TOKEN_SECRET`: Secret key Refresh Token minimal 32 karakter.
+   - `GEMINI_API_KEY`: API Key Google Gemini Anda (otomatis digunakan oleh frontend dan backend).
+   - `AI_PROVIDER`: `gemini`
+   - `AI_MODEL`: `gemini-2.5-flash`
+4. Klik **Deploy** (atau jalankan `vercel --prod` melalui Vercel CLI, maupun `vercel dev` untuk menjalankan kedua service secara lokal).
+
+---
+
 ## 🌟 Fitur & Halaman yang Dimigrasi 1:1
 
 - **Geo-Cultural Tagging**: State tema dinamis Aceh vs Sumatera Barat melalui `CultureContext`.

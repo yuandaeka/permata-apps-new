@@ -1,6 +1,7 @@
 node_modules
 .next
 .turbo
+.vercel
 dist
 build
 .legacy_vite
@@ -8,3 +9,5 @@ build
 .env
 .DS_Store
 Thumbs.db
+*.tsbuildinfo
+Design_System.md

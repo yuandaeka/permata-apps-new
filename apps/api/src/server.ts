@@ -1,3 +1,4 @@
+import 'express';
 import { app } from './app';
 import { env } from './config/env';
 import { logger } from './config/logger';
@@ -32,5 +33,8 @@ async function start() {
   }
 }
 
-start();
+if (!process.env.VERCEL && process.env.NODE_ENV !== 'test') {
+  start();
+}
 
+export default app;

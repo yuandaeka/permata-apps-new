@@ -1,3 +1,4 @@
+import path from 'path';
 import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
@@ -38,10 +39,39 @@ const app = express();
 
 app.set('trust proxy', 1);
 
-app.use(helmet());
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'", "'unsafe-inline'", 'https://cdnjs.cloudflare.com'],
+        styleSrc: ["'self'", "'unsafe-inline'", 'https://cdnjs.cloudflare.com'],
+        imgSrc: ["'self'", 'data:', 'https:'],
+      },
+    },
+    crossOriginResourcePolicy: { policy: 'cross-origin' },
+  })
+);
+
+const allowedOrigins = env.CORS_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean);
+if (env.WEB_APP_URL && !allowedOrigins.includes(env.WEB_APP_URL)) {
+  allowedOrigins.push(env.WEB_APP_URL);
+}
+
 app.use(
   cors({
-    origin: env.CORS_ORIGINS.split(',').map((o) => o.trim()),
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes('*') || allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      if (
+        (process.env.VERCEL || allowedOrigins.includes('*.vercel.app')) &&
+        origin.endsWith('.vercel.app')
+      ) {
+        return callback(null, true);
+      }
+      return callback(null, false);
+    },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Request-ID'],
@@ -74,16 +104,44 @@ const swaggerOptions = {
     },
     security: [{ bearerAuth: [] }],
   },
-  apis: ['./src/modules/**/*.router.ts', './src/modules/**/*.schema.ts'],
+  apis: [
+    './src/modules/**/*.router.ts',
+    './src/modules/**/*.schema.ts',
+    path.join(__dirname, 'modules/**/*.router.{ts,js}'),
+    path.join(__dirname, 'modules/**/*.schema.{ts,js}'),
+  ],
 };
 
 const swaggerSpec = swaggerJsdoc(swaggerOptions);
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+const SWAGGER_CDN = 'https://cdnjs.cloudflare.com/ajax/libs/swagger-ui/5.18.2';
+app.use(
+  '/api/docs',
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, {
+    customCssUrl: `${SWAGGER_CDN}/swagger-ui.min.css`,
+    customJs: [
+      `${SWAGGER_CDN}/swagger-ui-bundle.js`,
+      `${SWAGGER_CDN}/swagger-ui-standalone-preset.js`,
+    ],
+  })
+);
 app.get('/api/docs.json', (_req, res) => res.json(swaggerSpec));
 
-app.get('/health', (_req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString(), environment: env.NODE_ENV });
+app.get('/', (_req, res) => {
+  res.json({
+    status: 'ok',
+    service: 'PERMATA API',
+    version: '1.0.0',
+    docs: '/api/docs',
+    health: '/health',
+  });
 });
+
+const healthHandler: express.RequestHandler = (_req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString(), environment: env.NODE_ENV });
+};
+app.get('/health', healthHandler);
+app.get('/api/v1/health', healthHandler);
 
 const API_V1 = '/api/v1';
 app.use(`${API_V1}/auth`, authRouter);
@@ -115,4 +173,3 @@ app.use((_req, _res, next) => {
 app.use(errorHandlerMiddleware);
 
 export { app };
-

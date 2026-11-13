@@ -42,7 +42,7 @@ export class GeminiAIProvider implements AIProvider {
   private apiKey: string;
   private model: string;
 
-  constructor(apiKey: string, model = 'gemini-1.5-flash') {
+  constructor(apiKey: string, model = 'gemini-2.5-flash') {
     this.apiKey = apiKey;
     this.model = model;
   }
@@ -94,7 +94,7 @@ export class GeminiAIProvider implements AIProvider {
 
 export function getAIProvider(): AIProvider {
   if (env.AI_API_KEY && env.AI_PROVIDER === 'gemini') {
-    return new GeminiAIProvider(env.AI_API_KEY, env.AI_MODEL ?? 'gemini-1.5-flash');
+    return new GeminiAIProvider(env.AI_API_KEY, env.AI_MODEL ?? 'gemini-2.5-flash');
   }
   return new MockAIProvider();
 }
