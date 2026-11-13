@@ -20,9 +20,13 @@ const envSchema = z.object({
   ACCESS_TOKEN_TTL: z.string().default('15m'),
   REFRESH_TOKEN_TTL: z.string().default('7d'),
   OBJECT_STORAGE_ENDPOINT: z.string().optional(),
-  OBJECT_STORAGE_BUCKET: z.string().optional(),
+  OBJECT_STORAGE_BUCKET: z.string().default('uploads'),
   OBJECT_STORAGE_ACCESS_KEY: z.string().optional(),
   OBJECT_STORAGE_SECRET_KEY: z.string().optional(),
+  AWS_ENDPOINT_URL_S3: z.string().optional(),
+  AWS_ACCESS_KEY_ID: z.string().optional(),
+  AWS_SECRET_ACCESS_KEY: z.string().optional(),
+  AWS_REGION: z.string().default('ap-southeast-1'),
   AI_PROVIDER: z.string().optional(),
   AI_API_KEY: z.string().optional(),
   AI_MODEL: z.string().optional(),
@@ -54,6 +58,13 @@ function validateEnv() {
         : 'permata-default-refresh-token-secret-change-in-production-32chars',
     AI_API_KEY: resolvedAiApiKey,
     AI_PROVIDER: resolvedAiProvider,
+    OBJECT_STORAGE_ENDPOINT:
+      process.env.OBJECT_STORAGE_ENDPOINT || process.env.AWS_ENDPOINT_URL_S3,
+    OBJECT_STORAGE_BUCKET: process.env.OBJECT_STORAGE_BUCKET || 'uploads',
+    OBJECT_STORAGE_ACCESS_KEY:
+      process.env.OBJECT_STORAGE_ACCESS_KEY || process.env.AWS_ACCESS_KEY_ID,
+    OBJECT_STORAGE_SECRET_KEY:
+      process.env.OBJECT_STORAGE_SECRET_KEY || process.env.AWS_SECRET_ACCESS_KEY,
   };
 
   const result = envSchema.safeParse(rawEnv);

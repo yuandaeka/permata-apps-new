@@ -2,6 +2,7 @@ node_modules
 .next
 .turbo
 .vercel
+.neon
 dist
 build
 .legacy_vite
