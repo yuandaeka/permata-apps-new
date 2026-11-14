@@ -152,9 +152,9 @@ export default function ThemedContent({
   return (
     <div
       onClickCapture={handleClickCapture}
-      className="min-h-screen bg-canvas text-fg font-sans selection:bg-fg selection:text-surface"
+      className="min-h-screen bg-[#F8FAF8] text-slate-800 font-sans selection:bg-brand-500 selection:text-white"
     >
-      <Navbar />
+      {currentPath !== "/" && <Navbar />}
       {renderPage()}
     </div>
   );

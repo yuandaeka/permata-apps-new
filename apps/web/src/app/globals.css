@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
 @import "tailwindcss";
 
 /* ---------- 1. PRIMITIVE: netral (sama di semua budaya) ---------- */
@@ -87,10 +89,25 @@
   --color-action: var(--action);
   --color-action-hover: var(--action-hover);
 
-  --color-brand-50: var(--brand-50);   --color-brand-100: var(--brand-100);
-  --color-brand-200: var(--brand-200); --color-brand-500: var(--brand-500);
-  --color-brand-600: var(--brand-600); --color-brand-700: var(--brand-700);
-  --color-brand-800: var(--brand-800);
+  --color-brand-50: #F0FDF4;
+  --color-brand-100: #DCFCE7;
+  --color-brand-200: #BBF7D0;
+  --color-brand-300: #86EFAC;
+  --color-brand-400: #4ADE80;
+  --color-brand-500: #10B981;
+  --color-brand-600: #059669;
+  --color-brand-700: #047857;
+  --color-brand-800: #1B4332;
+  --color-brand-900: #0F291E;
+  --color-brand-950: #081711;
+
+  --color-accent-gold: #D97706;
+  --color-accent-goldLight: #FEF3C7;
+  --color-accent-maroon: #881337;
+  --color-accent-maroonLight: #FFE4E6;
+  --color-accent-mint: #E6F8F0;
+  --color-accent-sage: #F4F9F5;
+
   --color-accent: var(--accent-500);
   --color-accent-text: var(--accent-text);
   --color-accent-50: var(--accent-50);
@@ -106,7 +123,7 @@
   --color-neutral-400: var(--neutral-400);
   --color-neutral-500: var(--neutral-500);
 
-  --font-sans: var(--font-inter, ui-sans-serif, system-ui, sans-serif);
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
   --font-serif: var(--font-newsreader, ui-serif, Georgia, serif);
 
   --radius-sm: 8px;
@@ -121,6 +138,43 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   transition: background-color 400ms cubic-bezier(.2,0,0,1), color 400ms cubic-bezier(.2,0,0,1);
+}
+
+/* Custom Utilities for PERMATA Landing Page matching desain.html */
+.hero-glow-finora {
+  background: radial-gradient(circle at 65% 25%, rgba(16, 185, 129, 0.16) 0%, rgba(220, 252, 231, 0.08) 45%, rgba(255, 255, 255, 0) 75%);
+}
+.glass-card {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+}
+.card-shadow-finora {
+  box-shadow: 0 10px 30px -5px rgba(27, 67, 50, 0.06), 0 4px 12px -2px rgba(27, 67, 50, 0.03);
+}
+.card-shadow-hover:hover {
+  box-shadow: 0 20px 40px -10px rgba(27, 67, 50, 0.14), 0 8px 16px -4px rgba(27, 67, 50, 0.06);
+}
+.geo-pill-active {
+  background: #1B4332;
+  color: #FFFFFF;
+  box-shadow: 0 4px 12px rgba(27, 67, 50, 0.25);
+}
+.text-balance {
+  text-wrap: balance;
+}
+
+@keyframes bounceSubtle {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+.animate-bounce-subtle {
+  animation: bounceSubtle 3s ease-in-out infinite;
 }
 
 @media (prefers-reduced-motion: reduce) {
