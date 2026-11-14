@@ -1,4 +1,5 @@
 import * as Phaser from "phaser";
+import { gameTokens } from "../tokens";
 
 export default class UIScene extends Phaser.Scene {
   private parentScene!: Phaser.Scene & {
@@ -16,7 +17,7 @@ export default class UIScene extends Phaser.Scene {
   }
 
   create() {
-    this.add.rectangle(450, 300, 700, 400, 0x000000, 0.8);
+    this.add.rectangle(450, 300, 700, 400, 0x1c1917, 0.9);
 
     this.add
       .text(
@@ -33,10 +34,10 @@ export default class UIScene extends Phaser.Scene {
       .setOrigin(0.5);
 
     const benar = this.add
-      .text(450, 300, "Gunakan APAR / matikan sumber api", {
+      .text(450, 290, "Gunakan APAR / matikan sumber api", {
         fontSize: "18px",
-        backgroundColor: "#2ecc71",
-        padding: { x: 10, y: 5 },
+        backgroundColor: gameTokens.success,
+        padding: { x: 16, y: 8 },
       })
       .setOrigin(0.5)
       .setInteractive();
@@ -44,8 +45,8 @@ export default class UIScene extends Phaser.Scene {
     const salah = this.add
       .text(450, 350, "Panik dan lari tanpa matikan api", {
         fontSize: "18px",
-        backgroundColor: "#e74c3c",
-        padding: { x: 10, y: 5 },
+        backgroundColor: gameTokens.warning,
+        padding: { x: 16, y: 8 },
       })
       .setOrigin(0.5)
       .setInteractive();

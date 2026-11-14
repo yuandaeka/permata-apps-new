@@ -14,7 +14,7 @@ interface SavedJournalEntry {
 }
 
 const Journal = () => {
-  const { culture, theme } = useCulture();
+  const { culture } = useCulture();
   const [msg, setMsg] = useState("");
   const [mood, setMood] = useState(3);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -25,6 +25,7 @@ const Journal = () => {
     try {
       const stored = localStorage.getItem("permata_journal_entries");
       if (stored) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setSavedEntries(JSON.parse(stored));
       }
     } catch {
@@ -46,7 +47,7 @@ const Journal = () => {
     setIsAnalyzing(true);
     setTimeout(() => {
       let insight = "";
-      if (culture === "Aceh") {
+      if (culture === "aceh") {
         insight =
           "Refleksi ini mencerminkan keteguhan hati ('Meuseuraya' dan kebersamaan). Setiap rasa takut dan duka yang kamu lalui sedang membentuk ketangguhan jiwa yang lebih kokoh.";
       } else {
@@ -81,18 +82,18 @@ const Journal = () => {
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 lg:p-10 space-y-8">
-      <div className="bg-white rounded-[3rem] p-8 lg:p-12 shadow-2xl border border-black/5">
-        <h2 className="text-3xl font-black flex items-center gap-3">
-          <Sparkles className="text-yellow-500" /> Jurnal Hikmah
+    <div className="max-w-3xl mx-auto px-6 py-10 space-y-8">
+      <div className="bg-surface border border-line rounded-xl p-6 md:p-8 shadow-xs">
+        <h2 className="text-2xl font-semibold text-fg flex items-center gap-2">
+          <Sparkles size={20} className="text-fg-brand" /> Jurnal Hikmah
         </h2>
-        <p className="mt-2 opacity-50 italic">
-          Refleksi pemulihan berbasis kearifan lokal {culture}. Tempat aman untuk mengungkapkan perasaanmu.
+        <p className="mt-2 text-sm text-fg-muted">
+          Refleksi pemulihan berbasis kearifan lokal {culture === "aceh" ? "Aceh" : "Sumatera Barat"}. Tempat aman untuk mengungkapkan perasaanmu.
         </p>
 
         {/* Mood Selector */}
         <div className="mt-8">
-          <label className="text-xs font-black uppercase tracking-widest opacity-60 block mb-3">
+          <label className="text-xs font-semibold tracking-[0.06em] text-fg-subtle uppercase block mb-3">
             Bagaimana perasaanmu saat ini?
           </label>
           <div className="flex flex-wrap gap-3">
@@ -101,11 +102,11 @@ const Journal = () => {
                 key={m.value}
                 type="button"
                 onClick={() => setMood(m.value)}
-                className={`flex items-center gap-2 px-5 py-3 rounded-2xl text-xs font-bold transition-all border ${
+                className={
                   mood === m.value
-                    ? `${theme.btn} text-white border-transparent shadow-lg scale-105`
-                    : "bg-gray-50 border-gray-200 opacity-80 hover:opacity-100"
-                }`}
+                    ? "flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium border-2 border-brand-600 bg-tint text-fg-brand transition-all duration-150"
+                    : "flex items-center gap-2 px-4 py-2.5 rounded-md text-sm font-medium border border-line bg-surface text-fg-muted hover:border-line-strong hover:text-fg transition-all duration-150"
+                }
               >
                 <span className="text-lg">{m.emoji}</span>
                 <span>{m.label}</span>
@@ -115,34 +116,43 @@ const Journal = () => {
         </div>
 
         {/* Textarea */}
-        <textarea
-          className="w-full h-56 mt-6 p-6 bg-gray-50 rounded-2xl border border-black/5 outline-none text-base leading-relaxed focus:bg-white focus:ring-2 focus:ring-green-600 transition-all"
-          placeholder="Ceritakan apa yang kamu rasakan, alami, atau syukuri hari ini..."
-          value={msg}
-          onChange={(e) => setMsg(e.target.value)}
-        />
+        <div className="mt-4">
+          <label
+            htmlFor="journal-content"
+            className="text-xs font-semibold tracking-[0.06em] text-fg-subtle uppercase block mb-2"
+          >
+            Ceritakan perasaanmu
+          </label>
+          <textarea
+            id="journal-content"
+            className="w-full min-h-[160px] p-4 bg-sunken rounded-md border border-line-input text-fg text-base leading-relaxed resize-none outline-none placeholder:text-fg-subtle focus:border-brand-500 focus:ring-2 focus:ring-brand-200 transition-all"
+            placeholder="Ceritakan apa yang kamu rasakan, alami, atau syukuri hari ini..."
+            value={msg}
+            onChange={(e) => setMsg(e.target.value)}
+          />
+        </div>
 
         <button
           onClick={handleAnalyze}
           disabled={isAnalyzing || !msg.trim()}
-          className={`mt-6 w-full py-5 rounded-2xl font-black uppercase tracking-widest shadow-xl flex justify-center items-center gap-2 transition-all cursor-pointer ${
-            !msg.trim()
-              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-              : `${theme.btn} text-white hover:opacity-90 active:scale-[0.99]`
+          className={`mt-4 w-full h-11 rounded-md font-medium text-base flex justify-center items-center gap-2 transition-colors duration-200 ${
+            isAnalyzing || !msg.trim()
+              ? "bg-sunken text-neutral-400 cursor-not-allowed"
+              : "bg-action text-white hover:bg-action-hover"
           }`}
         >
           <Send size={18} />
-          {isAnalyzing ? "Menganalisis Makna Pertumbuhan..." : "Simpan & Analisis Makna (AI)"}
+          {isAnalyzing ? "Menganalisis…" : "Simpan & Analisis Makna (AI)"}
         </button>
 
         {/* AI Insight Card */}
         {aiInsight && (
-          <div className="mt-8 p-6 rounded-2xl bg-amber-50 border border-amber-200 text-amber-900 animate-fadeIn">
-            <div className="flex items-center gap-2 font-black text-sm uppercase tracking-wider text-amber-800 mb-2">
-              <Heart size={16} className="text-red-500" />
+          <div className="mt-6 p-4 rounded-sm bg-accent-50 border border-accent-200 text-fg">
+            <div className="flex items-center gap-2 text-sm font-semibold text-fg-accent mb-2">
+              <Heart size={16} />
               <span>Refleksi Pertumbuhan Jiwa:</span>
             </div>
-            <p className="text-sm leading-relaxed">{aiInsight}</p>
+            <p className="text-sm text-fg leading-relaxed">{aiInsight}</p>
           </div>
         )}
       </div>
@@ -150,25 +160,25 @@ const Journal = () => {
       {/* Saved Entries History */}
       {savedEntries.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-xs font-black uppercase tracking-[0.3em] opacity-40 italic flex items-center gap-2">
+          <h3 className="text-xs font-semibold tracking-[0.06em] text-fg-subtle uppercase flex items-center gap-2">
             <BookOpen size={16} /> Riwayat Refleksi
           </h3>
           <div className="space-y-4">
             {savedEntries.map((entry) => (
               <div
                 key={entry.id}
-                className="bg-white/60 p-6 rounded-3xl border border-white shadow-sm space-y-3"
+                className="bg-surface border border-line rounded-lg p-5 shadow-xs space-y-3"
               >
-                <div className="flex justify-between items-center text-xs opacity-50 font-bold">
+                <div className="flex justify-between items-center text-xs text-fg-subtle">
                   <span>{entry.date}</span>
-                  <span className="flex items-center gap-1">
-                    <CheckCircle2 size={14} className="text-green-600" />
-                    Tersimpan Aman ({entry.culture})
+                  <span className="flex items-center gap-1 text-xs text-fg-brand">
+                    <CheckCircle2 size={14} />
+                    Tersimpan Aman ({entry.culture === "aceh" ? "Aceh" : entry.culture === "sumbar" ? "Sumbar" : entry.culture})
                   </span>
                 </div>
-                <p className="text-sm leading-relaxed whitespace-pre-wrap">{entry.content}</p>
+                <p className="text-sm text-fg leading-relaxed whitespace-pre-wrap">{entry.content}</p>
                 {entry.aiInsight && (
-                  <p className="text-xs italic bg-amber-50/60 p-3 rounded-xl border border-amber-100 text-amber-800">
+                  <p className="text-xs text-fg-subtle bg-accent-50 p-3 rounded-sm border border-accent-200">
                     💡 {entry.aiInsight}
                   </p>
                 )}

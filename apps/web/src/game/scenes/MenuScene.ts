@@ -1,4 +1,5 @@
 import * as Phaser from "phaser";
+import { gameTokens } from "../tokens";
 
 export default class MenuScene extends Phaser.Scene {
   constructor() {
@@ -16,7 +17,7 @@ export default class MenuScene extends Phaser.Scene {
     const start = this.add
       .text(450, 300, "▶ MULAI EVAKUASI", {
         fontSize: "24px",
-        backgroundColor: "#22c55e",
+        backgroundColor: gameTokens.action,
         padding: { x: 20, y: 10 },
       })
       .setOrigin(0.5)

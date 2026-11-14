@@ -19,7 +19,7 @@
             --circle-inhale: rgba(59, 130, 246, 0.6);
             --circle-hold: rgba(148, 163, 184, 0.4);
             --circle-exhale: rgba(16, 185, 129, 0.5);
-            --warning-red: #ef4444;
+            --warning-amber: #8A5A0B;
         }
 
         * {
@@ -67,8 +67,8 @@
             background: #111;
             border-radius: 24px;
             overflow: hidden;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-            border: 4px solid white;
+            box-shadow: 0 4px 12px -2px rgba(28, 25, 23, 0.08);
+            border: 1px solid #E7E5E4;
         }
 
         video#input_video {
@@ -162,12 +162,13 @@
         }
 
         #feedback-msg {
-            background: #fee2e2;
-            color: var(--warning-red);
+            background: #FBF7EA;
+            color: var(--warning-amber);
+            border: 1px solid #EBDDA6;
             padding: 12px 24px;
-            border-radius: 16px;
+            border-radius: 12px;
             font-size: 0.95rem;
-            font-weight: 600;
+            font-weight: 500;
             opacity: 0;
             transform: translateY(10px);
             transition: all 0.3s ease;
@@ -285,7 +286,7 @@
                 <div id="timer">3.0</div>
             </div>
 
-            <div id="feedback-msg">Please follow the breathing rhythm.</div>
+            <div id="feedback-msg">Coba tegakkan bahu pelan-pelan dan ikuti irama napas ya</div>
 
             <button id="finish-btn">Finish Session</button>
         </div>

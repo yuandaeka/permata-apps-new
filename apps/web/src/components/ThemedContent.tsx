@@ -3,7 +3,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { usePathname } from "next/navigation";
 import dynamic from "next/dynamic";
-import { useCulture } from "@/context/CultureContext";
 import Navbar from "./Navbar";
 
 import LandingPage from "./pages/LandingPage";
@@ -21,8 +20,8 @@ import GameSiagaMinang from "./pages/GameSiagaMinang";
 const GameQuake = dynamic(() => import("./pages/GameQuake"), {
   ssr: false,
   loading: () => (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100 font-black text-lg">
-      Memuat Simulasi Sigap Bencana...
+    <div className="flex justify-center items-center min-h-screen bg-canvas text-fg text-base">
+      Memuat Simulasi Sigap Bencana…
     </div>
   ),
 });
@@ -56,12 +55,12 @@ export default function ThemedContent({
 }: {
   children: React.ReactNode;
 }) {
-  const { theme } = useCulture();
   const nextPathname = usePathname();
   const [clientPath, setClientPath] = useState<string | null>(null);
 
   useEffect(() => {
     if (nextPathname) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setClientPath(normalizePath(nextPathname));
     }
   }, [nextPathname]);
@@ -76,44 +75,47 @@ export default function ThemedContent({
 
   const currentPath = normalizePath(clientPath ?? nextPathname ?? "/");
 
-  const handleClickCapture = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    if (
-      e.defaultPrevented ||
-      e.button !== 0 ||
-      e.metaKey ||
-      e.ctrlKey ||
-      e.shiftKey ||
-      e.altKey
-    ) {
-      return;
-    }
+  const handleClickCapture = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (
+        e.defaultPrevented ||
+        e.button !== 0 ||
+        e.metaKey ||
+        e.ctrlKey ||
+        e.shiftKey ||
+        e.altKey
+      ) {
+        return;
+      }
 
-    const target = e.target as HTMLElement | null;
-    const anchor = target?.closest("a");
-    if (!anchor) return;
+      const target = e.target as HTMLElement | null;
+      const anchor = target?.closest("a");
+      if (!anchor) return;
 
-    if (
-      (anchor.target && anchor.target !== "_self") ||
-      anchor.hasAttribute("download")
-    ) {
-      return;
-    }
+      if (
+        (anchor.target && anchor.target !== "_self") ||
+        anchor.hasAttribute("download")
+      ) {
+        return;
+      }
 
-    const href = anchor.getAttribute("href");
-    if (!href || !href.startsWith("/")) return;
+      const href = anchor.getAttribute("href");
+      if (!href || !href.startsWith("/")) return;
 
-    const dest = normalizePath(href);
-    if (!KNOWN_ROUTES.has(dest)) return;
+      const dest = normalizePath(href);
+      if (!KNOWN_ROUTES.has(dest)) return;
 
-    e.preventDefault();
-    e.stopPropagation();
+      e.preventDefault();
+      e.stopPropagation();
 
-    if (dest !== normalizePath(window.location.pathname)) {
-      window.history.pushState(null, "", dest);
-    }
-    setClientPath(dest);
-    window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
-  }, []);
+      if (dest !== normalizePath(window.location.pathname)) {
+        window.history.pushState(null, "", dest);
+      }
+      setClientPath(dest);
+      window.scrollTo({ top: 0, behavior: "instant" as ScrollBehavior });
+    },
+    []
+  );
 
   const renderPage = () => {
     switch (currentPath) {
@@ -150,7 +152,7 @@ export default function ThemedContent({
   return (
     <div
       onClickCapture={handleClickCapture}
-      className={`min-h-screen transition-colors duration-700 ${theme.bg} ${theme.text} font-sans selection:bg-black selection:text-white`}
+      className="min-h-screen bg-canvas text-fg font-sans selection:bg-fg selection:text-surface"
     >
       <Navbar />
       {renderPage()}

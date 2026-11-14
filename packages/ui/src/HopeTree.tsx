@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, MotionConfig } from "framer-motion";
 import { TreePine } from "lucide-react";
 
 interface HopeTreeProps {
@@ -9,40 +9,44 @@ interface HopeTreeProps {
 }
 
 const HopeTree = ({ level }: HopeTreeProps) => {
-  return (
-    <div className="relative flex flex-col items-center">
-      <motion.div
-        animate={{
-          y: [0, -15, 0],
-          rotate: [0, 2, -2, 0],
-          scale: [1, 1.05, 1],
-        }}
-        transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
-        className="text-green-800 drop-shadow-2xl"
-      >
-        <TreePine size={180 + level * 20} strokeWidth={1} />
-      </motion.div>
+  const size = Math.min(160 + level * 16, 240);
 
-      {/* Progress Dots */}
-      <div className="flex gap-3 mt-10">
-        {[...Array(5)].map((_, i) => (
-          <motion.div
-            key={i}
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className={`w-4 h-4 rounded-full ${
-              i < level
-                ? "bg-green-500 shadow-[0_0_15px_rgba(34,197,94,0.5)]"
-                : "bg-black/5"
-            }`}
-          />
-        ))}
+  return (
+    <MotionConfig reducedMotion="user">
+      <div
+        className="relative flex flex-col items-center"
+        aria-label={`Pohon Harapan Level ${level} dari 5`}
+      >
+        <motion.div
+          animate={{
+            y: [0, -3, 0],
+            scale: [1, 1.02, 1],
+          }}
+          transition={{ repeat: Infinity, duration: 8, ease: "easeInOut" }}
+          className="text-brand-600"
+        >
+          <TreePine size={size} strokeWidth={1.5} />
+        </motion.div>
+
+        {/* Progress Dots */}
+        <div className="flex gap-3 mt-8" role="presentation">
+          {[...Array(5)].map((_, i) => (
+            <div
+              key={i}
+              className={`w-3 h-3 rounded-full transition-colors duration-300 ${
+                i < level ? "bg-brand-500" : "bg-neutral-100"
+              }`}
+            />
+          ))}
+        </div>
+
+        <p className="mt-3 text-sm text-fg-subtle">
+          Level {level} dari 5
+        </p>
       </div>
-      <p className="mt-4 text-[10px] font-black opacity-30 uppercase tracking-[0.2em]">
-        Pohon Harapan (Level {level})
-      </p>
-    </div>
+    </MotionConfig>
   );
 };
 
 export { HopeTree };
+export default HopeTree;

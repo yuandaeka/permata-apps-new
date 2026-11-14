@@ -1,53 +1,78 @@
 "use client";
 
 import Link from "next/link";
-import { MapPin, LayoutDashboard, BookOpen, Home } from "lucide-react";
+import { Home, LayoutDashboard, BookOpen } from "lucide-react";
 import { useCulture } from "@/context/CultureContext";
+import { usePathname } from "next/navigation";
 
 export default function Navbar() {
-  const { culture, setCulture, theme } = useCulture();
+  const { culture, setCulture } = useCulture();
+  const pathname = usePathname();
+
+  const navLinks = [
+    { href: "/", label: "Beranda", icon: <Home size={16} /> },
+    { href: "/dashboard", label: "Dashboard", icon: <LayoutDashboard size={16} /> },
+    { href: "/jurnal", label: "Jurnal", icon: <BookOpen size={16} /> },
+  ];
 
   return (
-    <nav className="sticky top-0 z-50 bg-white/30 backdrop-blur-md border-b border-black/5 px-8 py-5">
-      <div className="max-w-7xl mx-auto flex justify-between items-center">
+    <nav className="sticky top-0 z-50 h-16 bg-surface/80 backdrop-blur-md border-b border-line">
+      <div className="max-w-7xl mx-auto px-6 md:px-8 h-full flex justify-between items-center gap-6">
+        {/* Wordmark */}
         <Link
           href="/"
           prefetch={false}
-          className="text-3xl font-black tracking-tighter uppercase italic flex items-center gap-2"
+          className="text-lg font-semibold tracking-[0.08em] text-fg hover:text-fg-brand transition-colors duration-150"
         >
-          PERMATA <span className="w-2 h-2 rounded-full bg-green-500"></span>
+          PERMATA
         </Link>
 
-        <div className="flex gap-4 md:gap-10 font-black uppercase text-[10px] tracking-[0.1em] md:tracking-[0.2em] items-center">
-          <Link
-            href="/"
-            prefetch={false}
-            className="hover:opacity-50 transition flex items-center gap-1.5 underline-offset-8 hover:underline"
-          >
-            <Home size={14} /> <span className="hidden sm:inline">Home</span>
-          </Link>
-          <Link
-            href="/dashboard"
-            prefetch={false}
-            className="hover:opacity-50 transition flex items-center gap-1.5 underline-offset-8 hover:underline"
-          >
-            <LayoutDashboard size={14} /> Dashboard
-          </Link>
-          <Link
-            href="/jurnal"
-            prefetch={false}
-            className="hover:opacity-50 transition flex items-center gap-1.5 underline-offset-8 hover:underline"
-          >
-            <BookOpen size={14} /> Jurnal
-          </Link>
+        {/* Nav links */}
+        <div className="hidden md:flex items-center gap-1">
+          {navLinks.map((link) => {
+            const isActive =
+              link.href === "/"
+                ? pathname === "/"
+                : pathname?.startsWith(link.href);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                prefetch={false}
+                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors duration-150 ${
+                  isActive
+                    ? "bg-tint text-fg-brand"
+                    : "text-fg-muted hover:text-fg hover:bg-sunken"
+                }`}
+              >
+                {link.icon}
+                {link.label}
+              </Link>
+            );
+          })}
         </div>
 
-        <button
-          onClick={() => setCulture((c) => (c === "Aceh" ? "Sumbar" : "Aceh"))}
-          className={`flex items-center gap-3 px-6 py-3 rounded-full shadow-2xl text-white text-[10px] font-black tracking-widest transition-all active:scale-95 ${theme.btn} hover:opacity-90`}
+        {/* Segmented control pemilih budaya */}
+        <div
+          className="flex items-center bg-sunken rounded-full p-1"
+          role="group"
+          aria-label="Konteks budaya"
         >
-          <MapPin size={14} /> LOKASI: {culture.toUpperCase()}
-        </button>
+          {(["aceh", "sumbar"] as const).map((c) => (
+            <button
+              key={c}
+              onClick={() => setCulture(c)}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors duration-200 ${
+                culture === c
+                  ? "bg-action text-white shadow-xs"
+                  : "text-fg-muted hover:text-fg"
+              }`}
+              aria-pressed={culture === c}
+            >
+              {c === "aceh" ? "Aceh" : "Sumbar"}
+            </button>
+          ))}
+        </div>
       </div>
     </nav>
   );

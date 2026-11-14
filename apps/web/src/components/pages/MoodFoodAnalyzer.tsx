@@ -66,57 +66,66 @@ export default function MoodFoodAnalyzer() {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="max-w-3xl mx-auto p-8"
+      transition={{ duration: 0.32 }}
+      className="max-w-3xl mx-auto px-6 py-10"
     >
-      <div className="bg-white shadow-xl rounded-2xl p-8 space-y-8">
-        <h2 className="text-3xl font-bold text-center flex items-center justify-center gap-2">
-          <Sparkles className="w-6 h-6" />
+      <div className="bg-surface border border-line rounded-xl p-6 md:p-8 shadow-xs space-y-6">
+        <h2 className="text-2xl font-semibold text-fg flex items-center justify-center gap-2">
+          <Sparkles size={20} className="text-fg-brand" />
           Mood + Food Analyzer
         </h2>
 
         {/* Mood Selection */}
         <div>
-          <p className="font-semibold mb-4">Pilih Mood Kamu</p>
-          <div className="grid grid-cols-3 gap-4">
+          <span className="text-xs font-semibold tracking-[0.06em] text-fg-subtle uppercase mb-3 block">
+            Pilih Mood Kamu
+          </span>
+          <div
+            className="grid grid-cols-3 gap-3"
+            role="radiogroup"
+            aria-label="Pilih mood"
+          >
             {moods.map((m) => (
               <button
                 key={m.label}
                 onClick={() => setMood(m.label)}
-                className={`p-4 rounded-2xl text-2xl transition-all border ${
+                aria-pressed={mood === m.label}
+                className={
                   mood === m.label
-                    ? "bg-black text-white scale-105"
-                    : "bg-gray-50 hover:bg-gray-100"
-                }`}
+                    ? "flex flex-col items-center gap-1 p-4 rounded-lg border-2 border-brand-600 bg-tint text-fg-brand transition-all duration-150"
+                    : "flex flex-col items-center gap-1 p-4 rounded-lg border border-line bg-surface text-fg text-2xl hover:border-line-strong hover:bg-sunken transition-all duration-150"
+                }
               >
-                {m.emoji}
-                <div className="text-sm mt-1">{m.label}</div>
+                <span className="text-2xl">{m.emoji}</span>
+                <span className="text-sm font-medium">{m.label}</span>
               </button>
             ))}
           </div>
         </div>
 
         {/* Upload Section */}
-        <div className="space-y-4">
-          <p className="font-semibold">Upload File atau Ambil Foto</p>
+        <div>
+          <span className="text-xs font-semibold tracking-[0.06em] text-fg-subtle uppercase mb-3 block">
+            Upload File atau Ambil Foto
+          </span>
 
-          <div className="flex gap-4">
+          <div className="flex gap-3">
             <button
               onClick={() => fileInputRef.current?.click()}
-              className="flex-1 flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 p-4 rounded-2xl transition"
+              className="flex-1 flex items-center justify-center gap-2 h-11 rounded-md border border-line-strong bg-surface text-sm font-medium text-fg hover:bg-sunken transition-colors duration-150"
             >
-              <Upload className="w-5 h-5" />
-              Choose File
+              <Upload size={16} />
+              Pilih File
             </button>
 
             <button
               onClick={() => cameraInputRef.current?.click()}
-              className="flex-1 flex items-center justify-center gap-2 bg-gray-100 hover:bg-gray-200 p-4 rounded-2xl transition"
+              className="flex-1 flex items-center justify-center gap-2 h-11 rounded-md border border-line-strong bg-surface text-sm font-medium text-fg hover:bg-sunken transition-colors duration-150"
             >
-              <Camera className="w-5 h-5" />
-              Take Photo
+              <Camera size={16} />
+              Ambil Foto
             </button>
           </div>
 
@@ -138,23 +147,21 @@ export default function MoodFoodAnalyzer() {
           />
 
           {preview && (
-            <div className="mt-4">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={preview}
-                alt="Preview"
-                className="rounded-xl max-h-64 object-cover mx-auto shadow"
-              />
-            </div>
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={preview}
+              alt="Preview"
+              className="rounded-lg border border-line shadow-xs max-h-64 object-cover mx-auto mt-4 block"
+            />
           )}
         </div>
 
         {/* Analyze Button */}
         <button
           onClick={analyze}
-          className="w-full bg-black text-white py-4 rounded-2xl font-semibold text-lg hover:scale-[1.02] transition"
+          className="w-full h-11 rounded-md bg-action text-white font-medium text-sm hover:bg-action-hover transition-colors duration-200"
         >
-          {loading ? "Analyzing..." : "Analyze Now"}
+          {loading ? "Menganalisis…" : "Analisis Sekarang"}
         </button>
 
         {/* Result */}
@@ -162,7 +169,8 @@ export default function MoodFoodAnalyzer() {
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="bg-gray-50 p-6 rounded-2xl shadow-inner whitespace-pre-line leading-relaxed"
+            transition={{ duration: 0.2 }}
+            className="bg-sunken border border-line rounded-lg p-5 text-sm text-fg leading-relaxed whitespace-pre-line"
           >
             {response}
           </motion.div>

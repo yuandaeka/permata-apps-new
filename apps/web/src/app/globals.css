@@ -1,19 +1,131 @@
 @import "tailwindcss";
 
-@theme {
-  /* Variabel warna untuk fitur Geo-Cultural Tagging */
-  --color-aceh-primary: #1B4332;
-  --color-aceh-secondary: #D4AF37;
-  --color-aceh-background: #F0F4F2;
+/* ---------- 1. PRIMITIVE: netral (sama di semua budaya) ---------- */
+:root {
+  --neutral-0:   #FFFFFF;
+  --neutral-25:  #FAFAF9;
+  --neutral-50:  #F5F5F4;
+  --neutral-100: #E7E5E4;
+  --neutral-200: #D6D3D1;
+  --neutral-300: #A8A29E;
+  --neutral-400: #8F8983;
+  --neutral-500: #736D68;
+  --neutral-600: #57534E;
+  --neutral-700: #44403C;
+  --neutral-900: #1C1917;
 
-  --color-minang-primary: #7B0000;
-  --color-minang-secondary: #FFD700;
-  --color-minang-background: #FDF5E6;
+  --success-600: #1E7A53;
+  --warning-600: #8A5A0B;
+  --danger-600:  #B42318;
+  --info-600:    #1D5FBF;
+
+  --accent-text: #8A6D1A;
+  --accent-50:   #FBF7EA;
+  --accent-200:  #EBDDA6;
 }
 
-@layer base {
-  body {
-    @apply transition-colors duration-700 antialiased font-sans;
+/* ---------- 2. BUDAYA ---------- */
+:root,
+[data-culture="aceh"] {
+  --brand-50:  #F1F7F4;  --brand-100: #DDEDE4;  --brand-200: #BADBC9;
+  --brand-300: #8FC3A8;  --brand-400: #5FA583;  --brand-500: #3E8765;
+  --brand-600: #2C6B4F;  --brand-700: #22563F;  --brand-800: #1B4332;
+  --brand-900: #112B20;
+  --accent-500: #D4AF37;
+  --canvas:     #F7FAF8;
+}
+[data-culture="sumbar"] {
+  --brand-50:  #FBF3F1;  --brand-100: #F6E2DE;  --brand-200: #EBC1B9;
+  --brand-300: #DC9A8E;  --brand-400: #C86A5B;  --brand-500: #AE4234;
+  --brand-600: #9C2A22;  --brand-700: #7B0000;
+  --brand-800: #5C0000;  --brand-900: #3D0000;
+  --accent-500: #FFD700;
+  --canvas:     #FCF8F6;
+}
+
+/* ---------- 3. SEMANTIC ---------- */
+:root {
+  --canvas-base:     var(--canvas);
+  --surface:         var(--neutral-0);
+  --surface-sunken:  var(--neutral-50);
+  --surface-brand:   var(--brand-50);
+  --surface-emphasis: var(--brand-800);
+
+  --text:            var(--neutral-900);
+  --text-secondary:  var(--neutral-600);
+  --text-tertiary:   var(--neutral-500);
+  --text-on-brand:   var(--neutral-0);
+  --text-brand:      var(--brand-700);
+  --text-accent:     var(--accent-text);
+
+  --border:          var(--neutral-100);
+  --border-strong:   var(--neutral-200);
+  --border-input:    var(--neutral-400);
+
+  --action:          var(--brand-700);
+  --action-hover:    var(--brand-800);
+  --focus-ring:      var(--brand-500);
+
+  color-scheme: light;
+}
+
+/* ---------- 4. Tailwind v4 theme ---------- */
+@theme inline {
+  --color-canvas: var(--canvas-base);
+  --color-surface: var(--surface);
+  --color-sunken: var(--surface-sunken);
+  --color-tint: var(--surface-brand);
+  --color-emphasis: var(--surface-emphasis);
+  --color-fg: var(--text);
+  --color-fg-muted: var(--text-secondary);
+  --color-fg-subtle: var(--text-tertiary);
+  --color-fg-brand: var(--text-brand);
+  --color-fg-accent: var(--text-accent);
+  --color-line: var(--border);
+  --color-line-strong: var(--border-strong);
+  --color-line-input: var(--border-input);
+  --color-action: var(--action);
+  --color-action-hover: var(--action-hover);
+
+  --color-brand-50: var(--brand-50);   --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200); --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600); --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-accent: var(--accent-500);
+  --color-accent-text: var(--accent-text);
+  --color-accent-50: var(--accent-50);
+  --color-accent-200: var(--accent-200);
+
+  --color-success: var(--success-600);
+  --color-warning: var(--warning-600);
+  --color-danger:  var(--danger-600);
+  --color-info:    var(--info-600);
+
+  --color-neutral-100: var(--neutral-100);
+  --color-neutral-200: var(--neutral-200);
+  --color-neutral-400: var(--neutral-400);
+  --color-neutral-500: var(--neutral-500);
+
+  --font-sans: var(--font-inter, ui-sans-serif, system-ui, sans-serif);
+  --font-serif: var(--font-newsreader, ui-serif, Georgia, serif);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+}
+
+body {
+  background: var(--canvas-base);
+  color: var(--text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 400ms cubic-bezier(.2,0,0,1), color 400ms cubic-bezier(.2,0,0,1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
   }
 }
-

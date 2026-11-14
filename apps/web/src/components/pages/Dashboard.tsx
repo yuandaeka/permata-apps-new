@@ -20,107 +20,103 @@ const Dashboard = () => {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
-      className="max-w-7xl mx-auto p-6 lg:p-12"
+      transition={{ duration: 0.32 }}
+      className="max-w-7xl mx-auto px-6 md:px-8 py-10 md:py-16"
     >
       {/* ================= TOP SECTION ================= */}
       <div className="grid lg:grid-cols-3 gap-8">
         {/* LEFT SIDE */}
         <div className="lg:col-span-2 space-y-8">
-          <header className="bg-white/40 p-12 rounded-[4rem] border border-white shadow-sm relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-6 opacity-10">
-              <Activity size={120} />
-            </div>
-
-            <h2 className="text-4xl font-black">Halo, Penyintas Tangguh!</h2>
-
-            <p className="mt-2 text-lg opacity-60 font-medium italic">
-              &quot;Mambangkik Batang Tarandam&quot; - Semangat bangkit dari
-              keterpurukan.
+          {/* Banner Header */}
+          <header className="bg-tint border border-brand-200 rounded-xl p-8 md:p-10 relative overflow-hidden">
+            <h2 className="text-2xl md:text-3xl font-semibold text-fg">
+              Halo, Penyintas Tangguh!
+            </h2>
+            <p className="mt-2 text-base text-fg-muted">
+              {culture === "aceh"
+                ? '"Peugah hal nyang na, peubuet nyang baik" – Katakanlah yang ada, perbuatlah yang baik.'
+                : '"Mambangkik Batang Tarandam" – Semangat bangkit dari keterpurukan.'}
             </p>
           </header>
 
-          {/* FEATURE CARDS */}
+          {/* Feature Cards */}
           <div className="grid md:grid-cols-3 gap-6">
-            {/* Forum */}
-            <div className="p-8 bg-white rounded-[3rem] shadow-sm hover:shadow-2xl transition-all border border-black/5 group">
-              <Users
-                size={40}
-                className="mb-4 opacity-30 group-hover:text-blue-500 transition-colors"
-              />
-              <h4 className="text-xl font-black">
-                {culture === "Aceh" ? "Saweu Syedara" : "Badunsanak"}
+            {/* Forum — no link (not clickable in original) */}
+            <div className="bg-surface border border-line rounded-lg p-6 shadow-xs hover:border-line-strong hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group">
+              <Users size={24} className="text-fg-brand mb-4" />
+              <h4 className="text-base font-semibold text-fg">
+                {culture === "aceh" ? "Saweu Syedara" : "Badunsanak"}
               </h4>
-              <p className="text-xs mt-2 opacity-50 font-bold uppercase tracking-wider italic">
+              <p className="text-xs text-fg-muted mt-1 leading-relaxed">
                 Forum Terkurasi &amp; Anonim
               </p>
             </div>
 
             {/* Tele Screening */}
-            <Link href="/tele-screening" prefetch={false}>
-              <div className="p-8 bg-white rounded-[3rem] shadow-sm hover:shadow-2xl transition-all border border-black/5 group cursor-pointer">
-                <ShieldCheck
-                  size={40}
-                  className="mb-4 opacity-30 group-hover:text-red-500 transition-colors"
-                />
-                <h4 className="text-xl font-black">
-                  Tele-Screening &amp; Triage
-                </h4>
-                <p className="text-xs mt-2 opacity-50 font-bold uppercase tracking-wider italic">
-                  Deteksi Risiko Berbasis AI
-                </p>
-              </div>
+            <Link
+              href="/tele-screening"
+              prefetch={false}
+              className="bg-surface border border-line rounded-lg p-6 shadow-xs hover:border-line-strong hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group focus-visible:outline-2 focus-visible:outline-action"
+            >
+              <ShieldCheck size={24} className="text-fg-brand mb-4" />
+              <h4 className="text-base font-semibold text-fg">
+                Tele-Screening &amp; Triage
+              </h4>
+              <p className="text-xs text-fg-muted mt-1 leading-relaxed">
+                Deteksi Risiko Berbasis AI
+              </p>
             </Link>
 
             {/* AI Companion */}
-            <Link href="/ai-companion" prefetch={false}>
-              <div className="p-8 bg-white rounded-[3rem] shadow-sm hover:shadow-2xl transition-all border border-black/5 group cursor-pointer">
-                <MessageCircle
-                  size={40}
-                  className="mb-4 opacity-30 group-hover:text-purple-500 transition-colors"
-                />
-                <h4 className="text-xl font-black">
-                  AI Mental Support Companion (ChatBot)
-                </h4>
-                <p className="text-xs mt-2 opacity-50 font-bold uppercase tracking-wider italic">
-                  Hybrid AI + Crisis Detection
-                </p>
-              </div>
+            <Link
+              href="/ai-companion"
+              prefetch={false}
+              className="bg-surface border border-line rounded-lg p-6 shadow-xs hover:border-line-strong hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group focus-visible:outline-2 focus-visible:outline-action"
+            >
+              <MessageCircle size={24} className="text-fg-brand mb-4" />
+              <h4 className="text-base font-semibold text-fg">
+                AI Mental Support Companion
+              </h4>
+              <p className="text-xs text-fg-muted mt-1 leading-relaxed">
+                Hybrid AI + Crisis Detection
+              </p>
             </Link>
 
-            {/* MoodFoodAnalyzer */}
-            <Link href="/mood-food" prefetch={false}>
-              <div className="p-8 bg-white rounded-[3rem] shadow-sm hover:shadow-2xl transition-all border border-black/5 group cursor-pointer">
-                <Camera
-                  size={40}
-                  className="mb-4 opacity-30 group-hover:text-pink-500 transition-colors"
-                />
-                <h4 className="text-xl font-black">Mood + Food AI Analyzer</h4>
-                <p className="text-xs mt-2 opacity-50 font-bold uppercase tracking-wider italic">
-                  Analisis Emosi &amp; Nutrisi Berbasis AI
-                </p>
-              </div>
+            {/* Mood+Food Analyzer */}
+            <Link
+              href="/mood-food"
+              prefetch={false}
+              className="bg-surface border border-line rounded-lg p-6 shadow-xs hover:border-line-strong hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 group focus-visible:outline-2 focus-visible:outline-action"
+            >
+              <Camera size={24} className="text-fg-brand mb-4" />
+              <h4 className="text-base font-semibold text-fg">
+                Mood + Food AI Analyzer
+              </h4>
+              <p className="text-xs text-fg-muted mt-1 leading-relaxed">
+                Analisis Emosi &amp; Nutrisi Berbasis AI
+              </p>
             </Link>
           </div>
         </div>
 
         {/* RIGHT SIDE - HOPE TREE */}
-        <div className="bg-white/60 p-12 rounded-[4rem] border border-white shadow-2xl flex flex-col items-center justify-center">
-          <h3 className="text-xs font-black uppercase tracking-[0.3em] mb-12 opacity-40 italic">
+        <div className="bg-surface border border-line rounded-xl p-8 shadow-xs flex flex-col items-center">
+          <h3 className="text-xs font-semibold tracking-[0.06em] text-fg-subtle uppercase mb-8">
             Progress Resiliensi
           </h3>
 
           <HopeTree level={3} />
 
-          <div className="mt-12 w-full space-y-4">
-            <div className="h-2 w-full bg-black/5 rounded-full overflow-hidden">
+          <div className="mt-8 w-full">
+            <div className="h-2 w-full bg-neutral-100 rounded-full overflow-hidden">
               <div
-                className="h-full bg-green-500 rounded-full"
+                className="h-full bg-brand-500 rounded-full"
                 style={{ width: "60%" }}
-              ></div>
+              />
             </div>
-            <div className="flex justify-between text-[10px] font-black opacity-30 uppercase tracking-widest">
+            <div className="flex justify-between text-xs text-fg-subtle mt-2">
               <span>Resiliensi</span>
               <span>60%</span>
             </div>
@@ -129,10 +125,10 @@ const Dashboard = () => {
       </div>
 
       {/* ================= DAILY GOALS ================= */}
-      <div className="mt-16">
-        <div className="flex items-center gap-3 mb-10">
-          <Trophy size={22} className="text-yellow-500" />
-          <h3 className="text-xs font-black uppercase tracking-[0.3em] opacity-40 italic">
+      <div className="mt-14">
+        <div className="flex items-center gap-2 mb-6">
+          <Trophy size={20} className="text-fg-brand" />
+          <h3 className="text-xs font-semibold tracking-[0.06em] text-fg-subtle uppercase">
             Target Harian
           </h3>
         </div>
@@ -145,20 +141,16 @@ const Dashboard = () => {
           ].map((goal) => (
             <div
               key={goal.title}
-              className="bg-white/40 p-8 rounded-[3rem] border border-white flex items-center gap-6 hover:shadow-xl transition-all"
+              className="bg-surface border border-line rounded-lg p-5 flex items-center gap-4 hover:border-line-strong hover:shadow-sm transition-all duration-200"
             >
-              <Link href={goal.href} prefetch={false} className="flex-1 cursor-pointer">
-                <h5 className="font-black tracking-tighter text-lg hover:underline">
-                  {goal.title}
-                </h5>
-                <p className="text-[10px] opacity-50 font-bold uppercase tracking-widest italic">
-                  {goal.xp}
-                </p>
+              <Link href={goal.href} prefetch={false} className="flex-1">
+                <h5 className="font-medium text-fg">{goal.title}</h5>
+                <p className="text-xs text-fg-muted mt-0.5">{goal.xp}</p>
               </Link>
               <input
                 type="checkbox"
                 defaultChecked={false}
-                className="ml-auto w-6 h-6 accent-green-600 cursor-pointer"
+                className="w-5 h-5 ml-auto accent-action rounded"
               />
             </div>
           ))}
@@ -166,64 +158,77 @@ const Dashboard = () => {
       </div>
 
       {/* ================= GAME CENTER ================= */}
-      <div className="mt-24">
-        <div className="flex items-center gap-3 mb-10">
-          <Gamepad2 size={22} className="text-green-700" />
-          <h3 className="text-xs font-black uppercase tracking-[0.3em] opacity-40 italic">
+      <div className="mt-14">
+        <div className="flex items-center gap-2 mb-6">
+          <Gamepad2 size={20} className="text-fg-brand" />
+          <h3 className="text-xs font-semibold tracking-[0.06em] text-fg-subtle uppercase">
             Game Center Resiliensi
           </h3>
         </div>
 
-        <div className="grid md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6 mt-6">
           <Link href="/game-quake" prefetch={false}>
-            <div className="bg-white p-10 rounded-[3rem] shadow-md hover:shadow-2xl transition-all border border-black/5 cursor-pointer hover:-translate-y-2 duration-300">
-              <h4 className="text-xl font-black mb-3">Sigap Bencana</h4>
-              <p className="text-xs opacity-50 font-bold uppercase tracking-wider italic">
+            <div className="bg-surface border border-line rounded-lg p-6 shadow-xs hover:border-line-strong hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+              <h4 className="text-base font-semibold text-fg mb-1">
+                Sigap Bencana
+              </h4>
+              <p className="text-xs text-fg-muted mt-1 leading-relaxed">
                 Edukasi Mitigasi &amp; Respons Cepat
               </p>
             </div>
           </Link>
 
           <Link href="/game-healing" prefetch={false}>
-            <div className="bg-white p-10 rounded-[3rem] shadow-md hover:shadow-2xl transition-all border border-black/5 cursor-pointer hover:-translate-y-2 duration-300">
-              <h4 className="text-xl font-black mb-3">Pinch and Drop</h4>
-              <p className="text-xs opacity-50 font-bold uppercase tracking-wider italic">
+            <div className="bg-surface border border-line rounded-lg p-6 shadow-xs hover:border-line-strong hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+              <h4 className="text-base font-semibold text-fg mb-1">
+                Pinch and Drop
+              </h4>
+              <p className="text-xs text-fg-muted mt-1 leading-relaxed">
                 Prepare before disaster
               </p>
             </div>
           </Link>
 
           <Link href="/game-adventure" prefetch={false}>
-            <div className="bg-white p-10 rounded-[3rem] shadow-md hover:shadow-2xl transition-all border border-black/5 cursor-pointer hover:-translate-y-2 duration-300">
-              <h4 className="text-xl font-black mb-3">Adventure Budaya</h4>
-              <p className="text-xs opacity-50 font-bold uppercase tracking-wider italic">
+            <div className="bg-surface border border-line rounded-lg p-6 shadow-xs hover:border-line-strong hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+              <h4 className="text-base font-semibold text-fg mb-1">
+                Adventure Budaya
+              </h4>
+              <p className="text-xs text-fg-muted mt-1 leading-relaxed">
                 Roleplay Naratif Nusantara
               </p>
             </div>
           </Link>
 
+          {/* Roleplay — emphasis card */}
           <Link href="/roleplay" prefetch={false}>
-            <div className="bg-black text-white p-10 rounded-[3rem] shadow-xl hover:shadow-2xl transition-all cursor-pointer hover:-translate-y-2 duration-300">
-              <h4 className="text-xl font-black mb-3">Roleplay Psikoedukasi</h4>
-              <p className="text-xs opacity-70 font-bold uppercase tracking-wider italic">
+            <div className="bg-emphasis text-white rounded-lg p-6 shadow-xs hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+              <h4 className="text-base font-semibold text-white mb-1">
+                Roleplay Psikoedukasi
+              </h4>
+              <p className="text-xs text-white/75 mt-1 leading-relaxed">
                 Simulasi Mental &amp; Growth Path
               </p>
             </div>
           </Link>
 
           <Link href="/game-siagaminang" prefetch={false}>
-            <div className="bg-white p-10 rounded-[3rem] shadow-md hover:shadow-2xl transition-all border border-black/5 cursor-pointer hover:-translate-y-2 duration-300">
-              <h4 className="text-xl font-black mb-3">Siaga Minang</h4>
-              <p className="text-xs opacity-50 font-bold uppercase tracking-wider italic">
+            <div className="bg-surface border border-line rounded-lg p-6 shadow-xs hover:border-line-strong hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+              <h4 className="text-base font-semibold text-fg mb-1">
+                Siaga Minang
+              </h4>
+              <p className="text-xs text-fg-muted mt-1 leading-relaxed">
                 Mempersiapkan tangkap sigap bencana dan melatih motorik
               </p>
             </div>
           </Link>
 
           <Link href="/game-breath" prefetch={false}>
-            <div className="bg-white p-10 rounded-[3rem] shadow-md hover:shadow-2xl transition-all border border-black/5 cursor-pointer hover:-translate-y-2 duration-300">
-              <h4 className="text-xl font-black mb-3">Breathing Calm</h4>
-              <p className="text-xs opacity-50 font-bold uppercase tracking-wider italic">
+            <div className="bg-surface border border-line rounded-lg p-6 shadow-xs hover:border-line-strong hover:shadow-md hover:-translate-y-0.5 transition-all duration-200">
+              <h4 className="text-base font-semibold text-fg mb-1">
+                Breathing Calm
+              </h4>
+              <p className="text-xs text-fg-muted mt-1 leading-relaxed">
                 Latihan Nafas Anti Stress
               </p>
             </div>

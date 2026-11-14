@@ -1,0 +1,70 @@
+/* PERMATA Design System v2 Tokens for Web & Sub-Apps */
+:root {
+  --neutral-0:   #FFFFFF;
+  --neutral-25:  #FAFAF9;
+  --neutral-50:  #F5F5F4;
+  --neutral-100: #E7E5E4;
+  --neutral-200: #D6D3D1;
+  --neutral-300: #A8A29E;
+  --neutral-400: #8F8983;
+  --neutral-500: #736D68;
+  --neutral-600: #57534E;
+  --neutral-700: #44403C;
+  --neutral-900: #1C1917;
+
+  --success-600: #1E7A53;
+  --warning-600: #8A5A0B;
+  --danger-600:  #B42318;
+  --info-600:    #1D5FBF;
+
+  --accent-text: #8A6D1A;
+  --accent-50:   #FBF7EA;
+  --accent-200:  #EBDDA6;
+}
+
+:root,
+[data-culture="aceh"] {
+  --brand-50:  #F1F7F4;  --brand-100: #DDEDE4;  --brand-200: #BADBC9;
+  --brand-300: #8FC3A8;  --brand-400: #5FA583;  --brand-500: #3E8765;
+  --brand-600: #2C6B4F;  --brand-700: #22563F;  --brand-800: #1B4332;
+  --brand-900: #112B20;
+  --accent-500: #D4AF37;
+  --canvas:     #F7FAF8;
+}
+
+[data-culture="sumbar"] {
+  --brand-50:  #FBF3F1;  --brand-100: #F6E2DE;  --brand-200: #EBC1B9;
+  --brand-300: #DC9A8E;  --brand-400: #C86A5B;  --brand-500: #AE4234;
+  --brand-600: #9C2A22;  --brand-700: #7B0000;
+  --brand-800: #5C0000;  --brand-900: #3D0000;
+  --accent-500: #FFD700;
+  --canvas:     #FCF8F6;
+}
+
+:root {
+  --canvas-base:     var(--canvas);
+  --surface:         var(--neutral-0);
+  --surface-sunken:  var(--neutral-50);
+  --surface-brand:   var(--brand-50);
+  --surface-emphasis: var(--brand-800);
+
+  --text:            var(--neutral-900);
+  --text-secondary:  var(--neutral-600);
+  --text-tertiary:   var(--neutral-500);
+  --text-on-brand:   var(--neutral-0);
+  --text-brand:      var(--brand-700);
+  --text-accent:     var(--accent-text);
+
+  --border:          var(--neutral-100);
+  --border-strong:   var(--neutral-200);
+  --border-input:    var(--neutral-400);
+
+  --action:          var(--brand-700);
+  --action-hover:    var(--brand-800);
+  --focus-ring:      var(--brand-500);
+
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+}

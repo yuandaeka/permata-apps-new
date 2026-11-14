@@ -1,51 +1,43 @@
 "use client";
 
-import React, { createContext, useContext, useState } from "react";
+import React, { createContext, useContext, useState, useEffect } from "react";
 
-interface Theme {
-  bg: string;
-  text: string;
-  btn: string;
-  accent: string;
-}
+type Culture = "aceh" | "sumbar";
 
 interface CultureContextType {
-  culture: string;
-  setCulture: (c: string | ((prev: string) => string)) => void;
-  theme: Theme;
+  culture: Culture;
+  setCulture: (c: Culture) => void;
 }
 
-export const CultureContext = createContext<CultureContextType>({
-  culture: "Aceh",
+const CultureContext = createContext<CultureContextType>({
+  culture: "aceh",
   setCulture: () => {},
-  theme: {
-    bg: "bg-[#F0F4F2]",
-    text: "text-[#1B4332]",
-    btn: "bg-[#1B4332]",
-    accent: "text-[#D4AF37]",
-  },
 });
 
 export function CultureProvider({ children }: { children: React.ReactNode }) {
-  const [culture, setCulture] = useState("Aceh");
+  const [culture, setCultureState] = useState<Culture>("aceh");
 
-  const theme: Theme =
-    culture === "Aceh"
-      ? {
-          bg: "bg-[#F0F4F2]",
-          text: "text-[#1B4332]",
-          btn: "bg-[#1B4332]",
-          accent: "text-[#D4AF37]",
-        }
-      : {
-          bg: "bg-[#FDF5E6]",
-          text: "text-[#7B0000]",
-          btn: "bg-[#7B0000]",
-          accent: "text-[#FFD700]",
-        };
+  useEffect(() => {
+    // Baca dari cookie atau localStorage saat mount
+    const stored =
+      document.cookie
+        .split("; ")
+        .find((row) => row.startsWith("culture="))
+        ?.split("=")[1] as Culture | undefined;
+    const initial: Culture = stored === "sumbar" ? "sumbar" : "aceh";
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setCultureState(initial);
+    document.documentElement.dataset.culture = initial;
+  }, []);
+
+  const setCulture = (next: Culture) => {
+    document.documentElement.dataset.culture = next;
+    document.cookie = `culture=${next}; path=/; max-age=31536000; samesite=lax`;
+    setCultureState(next);
+  };
 
   return (
-    <CultureContext.Provider value={{ culture, setCulture, theme }}>
+    <CultureContext.Provider value={{ culture, setCulture }}>
       {children}
     </CultureContext.Provider>
   );
@@ -54,3 +46,5 @@ export function CultureProvider({ children }: { children: React.ReactNode }) {
 export function useCulture() {
   return useContext(CultureContext);
 }
+
+export { CultureContext };
