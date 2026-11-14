@@ -13,6 +13,9 @@ const nextConfig: NextConfig = {
   reactStrictMode: false,
   devIndicators: false,
   turbopack: {},
+  images: {
+    unoptimized: true,
+  },
   async rewrites() {
     if (!normalizedApiUrl) {
       return [];

@@ -5,6 +5,7 @@ import { useCulture } from "@/context/CultureContext";
 import { ShieldCheck, BrainCircuit, Users, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import permataImg from "@/assets/permata.png";
 
 const LandingPage = () => {
   const { culture } = useCulture();
@@ -43,12 +44,13 @@ const LandingPage = () => {
 
         <div className="rounded-xl border border-line shadow-md aspect-[4/5] overflow-hidden relative">
           <Image
-            src="/permata.png"
+            src={permataImg}
             className="w-full h-full object-cover"
             alt="PERMATA Project Contextual"
             fill
             sizes="(max-width: 1024px) 100vw, 50vw"
             priority
+            unoptimized
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent pointer-events-none" />
         </div>
